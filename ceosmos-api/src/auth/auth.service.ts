@@ -29,7 +29,7 @@ export class AuthService {
     });
     if (existing) throw new BadRequestException('Email or username already in use');
 
-    let passwordHash = null;
+    let passwordHash: string | undefined = undefined;
     if (dto.password) {
       passwordHash = await bcrypt.hash(dto.password, 12);
     }
@@ -98,9 +98,8 @@ export class AuthService {
       rpID,
       userID: new Uint8Array(Buffer.from(user.id)),
       userName: user.email,
-      userAgent: 'user_agent_here',
       excludeCredentials: passkeys.map(p => ({
-        id: new Uint8Array(Buffer.from(p.credentialId, 'base64url')),
+        id: p.credentialId,
         type: 'public-key',
       })),
       authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
@@ -122,16 +121,16 @@ export class AuthService {
     });
 
     if (verification.verified && verification.registrationInfo) {
-      const { credentialPublicKey, credentialID, counter, credentialDeviceType, credentialBackedUp } =
+      const { credential, credentialDeviceType, credentialBackedUp } =
         verification.registrationInfo;
 
       await this.prisma.passkey.create({
         data: {
-          credentialId: Buffer.from(credentialID).toString('base64url'),
+          credentialId: credential.id,
           userId: user.id,
           webAuthnUserId: Buffer.from(user.id).toString('base64url'),
-          publicKey: Buffer.from(credentialPublicKey),
-          counter: BigInt(counter),
+          publicKey: Buffer.from(credential.publicKey),
+          counter: BigInt(credential.counter),
           deviceType: credentialDeviceType,
           backedUp: credentialBackedUp,
           transports: body.response.transports || [],
@@ -150,7 +149,7 @@ export class AuthService {
     const options = await generateAuthenticationOptions({
       rpID,
       allowCredentials: passkeys.map(p => ({
-        id: new Uint8Array(Buffer.from(p.credentialId, 'base64url')),
+        id: p.credentialId,
         type: 'public-key',
       })),
       userVerification: 'preferred',
@@ -173,9 +172,9 @@ export class AuthService {
       expectedChallenge,
       expectedOrigin,
       expectedRPID: rpID,
-      authenticator: {
-        credentialPublicKey: new Uint8Array(passkey.publicKey),
-        credentialID: new Uint8Array(Buffer.from(passkey.credentialId, 'base64url')),
+      credential: {
+        id: passkey.credentialId,
+        publicKey: new Uint8Array(passkey.publicKey),
         counter: Number(passkey.counter),
         transports: passkey.transports as any,
       },
