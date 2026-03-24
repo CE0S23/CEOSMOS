@@ -1,0 +1,22 @@
+.flow-feed {
+  padding: 2rem 0;
+}
+
+.masonry-grid {
+  columns: 4 280px;
+  column-gap: 16px;
+
+  app-feed-card, .card-placeholder {
+    display: block;
+    margin-bottom: 16px;
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 900px) {
+  .masonry-grid { columns: 2 240px; }
+}
+
+@media (max-width: 560px) {
+  .masonry-grid { columns: 1; }
+}

@@ -1,0 +1,60 @@
+<main class="login-page" aria-label="Inicio de sesion">
+  <div class="cosmos-bg" aria-hidden="true">
+    <div class="star star-1"></div>
+    <div class="star star-2"></div>
+    <div class="star star-3"></div>
+    <div class="nebula"></div>
+  </div>
+
+  <section class="login-card glassmorphism" aria-labelledby="login-heading">
+    <div class="brand-section">
+      <span class="brand-mark" aria-hidden="true">✦</span>
+      <h1 id="login-heading" class="brand-title">CEOSmos</h1>
+      <p class="brand-tagline">Entra al estado de Flow</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-state" role="status" aria-live="polite">
+        <p-progressSpinner strokeWidth="3" styleClass="custom-spinner" />
+        <span>Autenticando...</span>
+      </div>
+    } @else {
+      <div class="auth-options">
+        <div id="google-btn" class="google-btn-wrapper" aria-label="Iniciar sesion con Google"></div>
+
+        <div class="divider" role="separator" aria-label="o">
+          <span>o</span>
+        </div>
+
+        @if (passkeyAvailable()) {
+          <button
+            id="passkey-btn"
+            class="passkey-btn"
+            (click)="signInWithPasskey()"
+            aria-label="Iniciar sesion con huella digital o biometria"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M7 11c0-2.76 2.24-5 5-5s5 2.24 5 5v1M5 12a7 7 0 0114 0v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4z"/>
+              <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+            </svg>
+            Iniciar con huella digital
+          </button>
+        } @else {
+          <p class="passkey-unavailable">
+            La autenticacion biometrica no esta disponible en este dispositivo.
+          </p>
+        }
+
+        @if (errorMessage()) {
+          <p class="error-msg" role="alert" aria-live="assertive">{{ errorMessage() }}</p>
+        }
+
+        <p class="privacy-note">
+          Al continuar, aceptas nuestra
+          <a routerLink="/privacidad" class="privacy-link">Politica de Privacidad</a>.
+        </p>
+      </div>
+    }
+  </section>
+</main>

@@ -1,0 +1,99 @@
+// ============================================
+// CEOSMOS — Prisma Schema (Prisma v7)
+// Sin url/directUrl — van en prisma.config.ts
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  passkeys    Passkey[]
+  sessions    Session[]
+  emailTokens EmailToken[]
+  preferences Preferences?
+  mediaItems  MediaItem[]
+}
+
+model Passkey {
+  credentialId   String   @id
+  userId         String
+  webAuthnUserId String
+  publicKey      Bytes
+  counter        BigInt
+  deviceType     String
+  backedUp       Boolean  @default(false)
+  transports     String[]
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailToken {
+  id        String         @id @default(uuid())
+  userId    String
+  code      String
+  type      EmailTokenType
+  expiresAt DateTime
+  used      Boolean        @default(false)
+  createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum EmailTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model Preferences {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  theme           String   @default("dark")
+  flowTimeDefault Int      @default(60)
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MediaItem {
+  id         String    @id @default(uuid())
+  userId     String
+  type       MediaType
+  externalId String?
+  url        String?
+  title      String?
+  thumbnail  String?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum MediaType {
+  YOUTUBE
+  IMAGE
+}

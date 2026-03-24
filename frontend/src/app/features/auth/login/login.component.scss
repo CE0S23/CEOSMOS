@@ -1,0 +1,186 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmos-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(123, 104, 238, 0.6), transparent);
+    animation: floatStar 8s ease-in-out infinite;
+  }
+  .star-1 { width: 300px; height: 300px; top: 10%; left: 5%; animation-delay: 0s; }
+  .star-2 { width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: 3s; }
+  .star-3 { width: 150px; height: 150px; bottom: 15%; left: 40%; animation-delay: 6s; }
+
+  .nebula {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.08), transparent 70%);
+    border-radius: 50%;
+  }
+}
+
+@keyframes floatStar {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  padding: 48px 40px;
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.5s ease-out;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.brand-section {
+  text-align: center;
+  margin-bottom: 36px;
+
+  .brand-mark {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .brand-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 8px;
+  }
+
+  .brand-tagline {
+    font-size: 0.9rem;
+    color: rgba(240, 244, 248, 0.55);
+    margin: 0;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+
+  span { font-size: 0.85rem; color: rgba(240, 244, 248, 0.6); }
+
+  ::ng-deep .custom-spinner .p-progress-spinner-circle {
+    stroke: #667eea !important;
+  }
+}
+
+.auth-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(240, 244, 248, 0.3);
+  font-size: 0.8rem;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.passkey-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  border: 1px solid rgba(123, 104, 238, 0.35);
+  border-radius: 12px;
+  color: rgba(240, 244, 248, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
+    border-color: rgba(123, 104, 238, 0.6);
+    transform: translateY(-1px);
+  }
+
+  &:active { transform: translateY(0); }
+}
+
+.passkey-unavailable {
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(240, 244, 248, 0.35);
+  margin: 0;
+}
+
+.error-msg {
+  background: rgba(233, 30, 99, 0.12);
+  border: 1px solid rgba(233, 30, 99, 0.3);
+  color: #f48fb1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  text-align: center;
+  margin: 0;
+}
+
+.privacy-note {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(240, 244, 248, 0.35);
+  margin: 0;
+
+  .privacy-link {
+    color: #7b68ee;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}

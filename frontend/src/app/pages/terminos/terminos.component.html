@@ -1,0 +1,123 @@
+<div class="terminos-container">
+
+  <!-- Hero Header -->
+  <section class="terminos-hero fade-in">
+    <div class="container">
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <mat-icon>shield</mat-icon>
+          <span>Legal</span>
+        </div>
+        <h1 class="hero-title">
+          Términos de <span class="text-gradient">Uso</span>
+        </h1>
+        <p class="hero-subtitle">
+          Transparencia total. Conoce los acuerdos que rigen tu experiencia en CEOSMOS
+          y nuestro compromiso contigo.
+        </p>
+        <div class="hero-meta">
+          <mat-icon class="meta-icon">event</mat-icon>
+          <span>Última actualización: {{ lastUpdated }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decorative cosmic elements -->
+    <div class="cosmic-orb orb-1"></div>
+    <div class="cosmic-orb orb-2"></div>
+    <div class="cosmic-orb orb-3"></div>
+  </section>
+
+  <!-- Intro Card -->
+  <section class="intro-section">
+    <div class="container">
+      <div class="intro-card glassmorphism fade-in">
+        <div class="intro-icon">
+          <mat-icon>info_outline</mat-icon>
+        </div>
+        <div class="intro-text">
+          <h2>Bienvenido a CEOSMOS</h2>
+          <p>
+            Este documento establece los términos y condiciones bajo los cuales puedes acceder
+            y utilizar nuestra plataforma de productividad y trabajo profundo. Por favor,
+            léelos detenidamente antes de usar el servicio.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table of Contents -->
+  <section class="toc-section">
+    <div class="container">
+      <div class="toc-card glassmorphism fade-in">
+        <h2 class="toc-title">
+          <mat-icon>list</mat-icon>
+          Contenido
+        </h2>
+        <ul class="toc-list">
+          <li *ngFor="let section of sections; let i = index">
+            <a [href]="'#section-' + i" class="toc-link">
+              <span class="toc-number">{{ i + 1 | number:'2.0' }}</span>
+              <span>{{ section.title }}</span>
+              <mat-icon class="toc-arrow">chevron_right</mat-icon>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sections -->
+  <section class="sections-area">
+    <div class="container">
+      <div class="sections-grid">
+        <div
+          *ngFor="let section of sections; let i = index"
+          [id]="'section-' + i"
+          class="section-card glassmorphism fade-in"
+          [style.animation-delay]="(i * 0.08) + 's'">
+
+          <div class="section-header">
+            <div class="section-number">{{ i + 1 }}</div>
+            <div class="section-icon-wrap">
+              <mat-icon>{{ section.icon }}</mat-icon>
+            </div>
+            <h3 class="section-title">{{ section.title }}</h3>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <p class="section-content">{{ section.content }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact / Footer CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-card glassmorphism fade-in">
+        <div class="cta-icon-wrap">
+          <mat-icon>mail_outline</mat-icon>
+        </div>
+        <h2 class="cta-title">¿Tienes preguntas?</h2>
+        <p class="cta-description">
+          Si tienes dudas sobre estos términos o sobre el funcionamiento de CEOSMOS,
+          no dudes en ponerte en contacto con nosotros.
+        </p>
+        <div class="cta-actions">
+          <a href="mailto:soporte@ceosmos.app" mat-raised-button class="btn-contact">
+            <mat-icon>email</mat-icon>
+            soporte&#64;ceosmos.app
+          </a>
+          <button mat-stroked-button class="btn-back" (click)="goHome()">
+            <mat-icon>arrow_back</mat-icon>
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

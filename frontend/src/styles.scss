@@ -1,0 +1,99 @@
+
+@import "primeicons/primeicons.css";
+
+:root {
+  --cosmos-deep-space: #0a0e27;
+  --cosmos-nebula: #1a1f3a;
+  --cosmos-star-blue: #4a90e2;
+  --cosmos-aurora: #7b68ee;
+  --cosmos-galaxy-purple: #9b59b6;
+  --cosmos-cosmic-pink: #e91e63;
+  --cosmos-stardust: #f0f4f8;
+  --cosmos-moonlight: #e8eef5;
+
+  --gradient-cosmos: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-nebula: linear-gradient(135deg, #4a90e2 0%, #7b68ee 50%, #9b59b6 100%);
+
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-glow: 0 0 20px rgba(123, 104, 238, 0.3);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--cosmos-deep-space);
+  color: var(--cosmos-stardust);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cosmos-nebula); }
+::-webkit-scrollbar-thumb { background: var(--cosmos-aurora); border-radius: 3px; }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.glassmorphism {
+  background: rgba(26, 31, 58, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* PrimeNG Sidebar override - cosmos theme */
+.p-sidebar {
+  background: rgba(26, 31, 58, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+  .p-sidebar-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .p-sidebar-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 60px);
+  }
+}
+
+/* PrimeNG Skeleton override */
+.p-skeleton {
+  background: rgba(255, 255, 255, 0.05) !important;
+
+  &::after {
+    background: linear-gradient(90deg, transparent, rgba(123, 104, 238, 0.08), transparent) !important;
+  }
+}

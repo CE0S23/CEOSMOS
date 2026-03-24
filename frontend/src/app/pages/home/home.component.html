@@ -1,0 +1,103 @@
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section fade-in">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Bienvenido al
+                    <span class="text-gradient">Cosmos</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Un espacio diseñado para el trabajo profundo, donde el cosmos visual y auditivo
+                    se fusionan para maximizar tu concentración y creatividad.
+                </p>
+
+                <!-- Barra de búsqueda -->
+                <div class="search-section">
+                    <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>
+                </div>
+
+                <!-- Quote del día -->
+                <div class="quote-card glassmorphism" *ngIf="currentQuote">
+                    <mat-icon class="quote-icon">format_quote</mat-icon>
+                    <blockquote class="quote-text">
+                        {{ currentQuote.text }}
+                    </blockquote>
+                    <cite class="quote-author">— {{ currentQuote.author }}</cite>
+                    <button mat-icon-button class="refresh-quote" (click)="loadRandomQuote()"
+                        aria-label="Cargar nueva cita">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title text-gradient">¿Cómo funciona CEOSMOS?</h2>
+
+            <div class="features-grid">
+                <!-- Feature 1: Cosmos Visual -->
+                <div class="feature-card glassmorphism fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <mat-icon>image</mat-icon>
+                    </div>
+                    <h3 class="feature-title">Cosmos Visual</h3>
+                    <p class="feature-description">
+                        Imágenes de alta calidad de arte, naturaleza, arquitectura y espacio
+                        que sirven como anclaje visual para evitar distracciones.
+                    </p>
+                </div>
+
+                <!-- Feature 2: Cosmos Auditivo -->
+                <div class="feature-card glassmorphism fade-in" style="animation-delay: 0.2s;">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);">
+                        <mat-icon>headphones</mat-icon>
+                    </div>
+                    <h3 class="feature-title">Cosmos Auditivo</h3>
+                    <p class="feature-description">
+                        Integración de audio con frecuencias alfa, lo-fi y sonidos ambientales
+                        que ayudan al cerebro a entrar en estado de concentración.
+                    </p>
+                </div>
+
+                <!-- Feature 3: Modos de Enfoque -->
+                <div class="feature-card glassmorphism fade-in" style="animation-delay: 0.4s;">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #9b59b6 0%, #e91e63 100%);">
+                        <mat-icon>tune</mat-icon>
+                    </div>
+                    <h3 class="feature-title">Modos de Enfoque</h3>
+                    <p class="feature-description">
+                        Elige entre diferentes modos (Escritura, Programación, Lluvia de ideas)
+                        y la app ajusta automáticamente la experiencia visual y auditiva.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content glassmorphism">
+                <h2 class="cta-title">Comienza tu viaje hacia el trabajo profundo</h2>
+                <p class="cta-description">
+                    Explora los recursos externos que hemos curado para ti o sumérgete
+                    directamente en la experiencia CEOSMOS.
+                </p>
+                <div class="cta-buttons">
+                    <button mat-raised-button class="cta-button primary" routerLink="/terminos">
+                        <mat-icon>rocket_launch</mat-icon>
+                        Comenzar ahora
+                    </button>
+                    <button mat-stroked-button class="cta-button secondary" routerLink="/terminos">
+                        <mat-icon>info</mat-icon>
+                        Saber más
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

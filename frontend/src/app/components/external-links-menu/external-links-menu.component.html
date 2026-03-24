@@ -1,0 +1,72 @@
+<div class="external-links-container">
+    <!-- Botón de menú -->
+    <button mat-icon-button (click)="togglePanel()" class="menu-trigger" aria-label="Abrir menú de recursos externos">
+        <mat-icon>apps</mat-icon>
+    </button>
+
+    <!-- Overlay Panel -->
+    <div class="overlay-backdrop" *ngIf="isPanelOpen" (click)="closePanel()"></div>
+
+    <div class="links-panel glassmorphism" [class.open]="isPanelOpen">
+        <!-- Header con botón de cerrar -->
+        <div class="panel-header">
+            <div class="header-content">
+                <h2 class="panel-title text-gradient">Recursos Externos</h2>
+                <p class="panel-subtitle">Herramientas para potenciar tu enfoque</p>
+            </div>
+            <button mat-icon-button (click)="closePanel()" class="close-btn" aria-label="Cerrar panel">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+
+        <!-- Filtros de categoría -->
+        <div class="category-filters">
+            <button mat-raised-button [class.active]="selectedCategory === 'all'" (click)="setCategory('all')"
+                class="filter-btn">
+                <mat-icon>apps</mat-icon>
+                Todos
+            </button>
+            <button mat-raised-button [class.active]="selectedCategory === 'music'" (click)="setCategory('music')"
+                class="filter-btn">
+                <mat-icon>music_note</mat-icon>
+                Música
+            </button>
+            <button mat-raised-button [class.active]="selectedCategory === 'images'" (click)="setCategory('images')"
+                class="filter-btn">
+                <mat-icon>image</mat-icon>
+                Imágenes
+            </button>
+            <button mat-raised-button [class.active]="selectedCategory === 'productivity'"
+                (click)="setCategory('productivity')" class="filter-btn">
+                <mat-icon>check_circle</mat-icon>
+                Productividad
+            </button>
+            <button mat-raised-button [class.active]="selectedCategory === 'inspiration'"
+                (click)="setCategory('inspiration')" class="filter-btn">
+                <mat-icon>auto_awesome</mat-icon>
+                Inspiración
+            </button>
+        </div>
+
+        <!-- Grid de enlaces -->
+        <div class="links-grid">
+            <div *ngFor="let link of filteredLinks" class="link-card glassmorphism" (click)="openLink(link.url)"
+                [style.--link-color]="link.color">
+                <div class="link-icon-wrapper" [style.background]="link.color">
+                    <mat-icon class="link-icon">{{ link.icon }}</mat-icon>
+                </div>
+                <div class="link-info">
+                    <h3 class="link-name">{{ link.name }}</h3>
+                    <p class="link-description">{{ link.description }}</p>
+                </div>
+                <mat-icon class="external-icon">open_in_new</mat-icon>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="panel-footer">
+            <mat-icon>info_outline</mat-icon>
+            <span>Estos enlaces te llevarán a sitios externos</span>
+        </div>
+    </div>
+</div>
