@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -6,19 +12,88 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(3)
+  @MaxLength(30)
   username: string;
 
-  @IsOptional()
   @IsString()
-  @MinLength(6)
-  password?: string;
+  @MinLength(8)
+  @MaxLength(72)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain uppercase, lowercase and a number',
+  })
+  password: string;
 }
 
 export class LoginDto {
   @IsEmail()
   email: string;
 
-  @IsOptional()
   @IsString()
-  password?: string;
+  @MinLength(1)
+  password: string;
+}
+
+export class WebAuthnRegisterOptionsDto {
+  @IsEmail()
+  email: string;
+}
+
+export class WebAuthnRegisterVerifyDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  challenge: string;
+
+  response: Record<string, unknown>;
+}
+
+export class WebAuthnLoginOptionsDto {
+  @IsEmail()
+  email: string;
+}
+
+export class WebAuthnLoginVerifyDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  challenge: string;
+
+  response: Record<string, unknown>;
+}
+
+export class VerifyEmailDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(64)
+  @MaxLength(64)
+  code: string;
+}
+
+export class ResendVerificationDto {
+  @IsEmail()
+  email: string;
+}
+
+export class ForgotPasswordDto {
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @IsString()
+  @MinLength(64)
+  @MaxLength(64)
+  token: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain uppercase, lowercase and a number',
+  })
+  newPassword: string;
 }

@@ -6,80 +6,118 @@ import {
   Req,
   Res,
   HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import type { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import {
+  RegisterDto,
+  LoginDto,
+  WebAuthnRegisterOptionsDto,
+  WebAuthnRegisterVerifyDto,
+  WebAuthnLoginOptionsDto,
+  WebAuthnLoginVerifyDto,
+  VerifyEmailDto,
+  ResendVerificationDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto/auth.dto';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto.email, dto.code);
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerification(dto.email);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
+  }
+
   @Post('login')
-  @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: any) {
-    const session = await this.authService.login(dto);
-    res.cookie('Authentication', session.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const session = await this.authService.login(dto, req);
+    res.cookie('Authentication', session.accessToken, COOKIE_OPTIONS);
     return { success: true };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  @HttpCode(200)
-  async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
-    await this.authService.logout(req.user.id);
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @Req() req: Request & { user: { id: string } },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout((req as any).user.id);
     res.clearCookie('Authentication');
     return { success: true };
   }
 
-  @Post('webauthn/register/generate-options')
-  async webAuthnRegisterOptions(@Body('email') email: string) {
-    return this.authService.generateWebAuthnRegisterOptions(email);
+  @Post('webauthn/register/options')
+  @HttpCode(HttpStatus.OK)
+  async webAuthnRegisterOptions(@Body() dto: WebAuthnRegisterOptionsDto) {
+    return this.authService.generateWebAuthnRegisterOptions(dto.email);
   }
 
   @Post('webauthn/register/verify')
-  async webAuthnRegisterVerify(
-    @Body('email') email: string,
-    @Body('response') response: any,
-    @Body('challenge') challenge: string,
-  ) {
-    return this.authService.verifyWebAuthnRegister(email, response, challenge);
+  @HttpCode(HttpStatus.OK)
+  async webAuthnRegisterVerify(@Body() dto: WebAuthnRegisterVerifyDto) {
+    return this.authService.verifyWebAuthnRegister(dto);
   }
 
-  @Post('webauthn/login/generate-options')
-  async webAuthnLoginOptions(@Body('email') email: string) {
-    return this.authService.generateWebAuthnLoginOptions(email);
+  @Post('webauthn/login/options')
+  @HttpCode(HttpStatus.OK)
+  async webAuthnLoginOptions(@Body() dto: WebAuthnLoginOptionsDto) {
+    return this.authService.generateWebAuthnLoginOptions(dto.email);
   }
 
   @Post('webauthn/login/verify')
+  @HttpCode(HttpStatus.OK)
   async webAuthnLoginVerify(
-    @Body('email') email: string,
-    @Body('response') response: any,
-    @Body('challenge') challenge: string,
-    @Res({ passthrough: true }) res: any,
+    @Body() dto: WebAuthnLoginVerifyDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.verifyWebAuthnLogin(email, response, challenge);
-    if ((result as any).accessToken) {
-      res.cookie('Authentication', (result as any).accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return { success: true };
-    }
-    return { success: false };
+    const session = await this.authService.verifyWebAuthnLogin(dto, req);
+    res.cookie('Authentication', session.accessToken, COOKIE_OPTIONS);
+    return { success: true };
   }
 }

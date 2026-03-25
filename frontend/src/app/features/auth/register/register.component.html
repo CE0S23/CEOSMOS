@@ -1,0 +1,58 @@
+<main class="login-page">
+  <div class="cosmos-bg" aria-hidden="true">
+    <div class="star star-1"></div>
+    <div class="star star-2"></div>
+    <div class="star star-3"></div>
+    <div class="nebula"></div>
+  </div>
+
+  <section class="login-card glassmorphism">
+    <div class="brand-section">
+      <span class="brand-mark">✦</span>
+      <h1 class="brand-title">CEOSmos</h1>
+      <p class="brand-tagline">Crea tu cuenta espacial</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-state">
+        <p-progressSpinner strokeWidth="3" styleClass="custom-spinner" />
+        <span>Registrando...</span>
+      </div>
+    } @else {
+      <div class="auth-options">
+        <form [formGroup]="registerForm" (ngSubmit)="register()" class="form-section">
+          <div class="field">
+            <input pInputText id="username" formControlName="username" type="text" placeholder="Nombre de usuario" style="width: 100%" />
+          </div>
+
+          <div class="field">
+            <input pInputText id="email" formControlName="email" type="email" placeholder="Correo electrónico" style="width: 100%" />
+          </div>
+
+          <div class="field">
+            <p-password id="password" formControlName="password" placeholder="Contraseña" [feedback]="true" promptLabel="Ingresa contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true"></p-password>
+          </div>
+
+          <div class="field">
+            <p-password id="confirmPassword" formControlName="confirmPassword" placeholder="Confirmar contraseña" [feedback]="false" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true"></p-password>
+          </div>
+
+          @if (registerForm.hasError('mismatch')) {
+            <p class="error-msg">Las contraseñas no coinciden.</p>
+          }
+
+          <button pButton type="submit" label="Registrarse" [disabled]="registerForm.invalid" class="login-submit-btn" style="margin-top: 15px; width: 100%;"></button>
+
+          <div class="auth-links">
+            <br />
+            <a routerLink="/login" class="auth-link">¿Ya tienes cuenta? Inicia sesión</a>
+          </div>
+        </form>
+
+        @if (errorMessage()) {
+          <p class="error-msg">{{ errorMessage() }}</p>
+        }
+      </div>
+    }
+  </section>
+</main>

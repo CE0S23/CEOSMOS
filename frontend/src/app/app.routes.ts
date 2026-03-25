@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 export const APP_ROUTES: Routes = [
   {
@@ -13,16 +14,17 @@ export const APP_ROUTES: Routes = [
     title: 'CEOSmos - Deep Work Platform',
   },
   {
-    path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login/login.component').then(m => m.LoginComponent),
-    title: 'CEOSmos - Iniciar Sesion',
+    path: '', // Maps to /login, /register, etc directly from auth.routes
+    loadChildren: () =>
+      import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
+    canActivate: [guestGuard]
   },
   {
     path: 'feed',
     loadComponent: () =>
       import('./features/pages/feed-page/feed-page.component').then(m => m.FeedPageComponent),
     title: 'CEOSmos - Flow Feed',
+    canActivate: [authGuard]
   },
   {
     path: 'privacidad',

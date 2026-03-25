@@ -1,24 +1,49 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { MediaService } from './media.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateMediaDto, GetMediaQueryDto } from './dto/media.dto';
+
+interface RequestWithUser extends Request {
+  user: { id: string };
+}
 
 @Controller('media')
 @UseGuards(JwtAuthGuard)
 export class MediaController {
-  constructor(private mediaService: MediaService) {}
+  constructor(private readonly mediaService: MediaService) {}
 
   @Get()
-  async getMedia(@Req() req: any) {
-    return this.mediaService.getUserMedia(req.user.id);
+  async getMedia(
+    @Req() req: RequestWithUser,
+    @Query() query: GetMediaQueryDto,
+  ) {
+    return this.mediaService.getUserMedia(req.user.id, query);
   }
 
   @Post()
-  async addMedia(@Req() req: any, @Body() data: any) {
+  async addMedia(
+    @Req() req: RequestWithUser,
+    @Body() data: CreateMediaDto,
+  ) {
     return this.mediaService.addMedia(req.user.id, data);
   }
 
   @Delete(':id')
-  async deleteMedia(@Req() req: any, @Param('id') id: string) {
+  async deleteMedia(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+  ) {
     return this.mediaService.deleteMedia(req.user.id, id);
   }
 }

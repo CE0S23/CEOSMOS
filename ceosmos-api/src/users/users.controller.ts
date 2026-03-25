@@ -1,34 +1,49 @@
-import { Controller, Get, Patch, Body, UseGuards, Req, Delete, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdatePreferencesDto, UpdateProfileDto } from './dto/users.dto';
+
+interface RequestWithUser extends Request {
+  user: { id: string };
+}
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  async getMe(@Req() req: any) {
+  async getMe(@Req() req: RequestWithUser) {
     return this.usersService.getProfile(req.user.id);
   }
 
+  @Patch('preferences')
+  async updatePreferences(
+    @Req() req: RequestWithUser,
+    @Body() data: UpdatePreferencesDto,
+  ) {
+    return this.usersService.updatePreferences(req.user.id, data);
+  }
+
   @Patch('profile')
-  async updateProfile(@Req() req: any, @Body() data: any) {
+  async updateProfile(
+    @Req() req: RequestWithUser,
+    @Body() data: UpdateProfileDto,
+  ) {
     return this.usersService.updateProfile(req.user.id, data);
   }
 
-  @Delete(':id')
-  async deleteAccount(@Req() req: any, @Param('id') id: string) {
-    return this.usersService.deleteAccount(req.user.id, id);
-  }
-
-  @Post('change-password-request')
-  async requestPasswordChange(@Req() req: any) {
-    return this.usersService.requestPasswordChange(req.user.id);
-  }
-
-  @Post('confirm-password-change')
-  async confirmPasswordChange(@Req() req: any, @Body() body: any) {
-    return this.usersService.confirmPasswordChange(req.user.id, body.token, body.newPassword);
+  @Delete('me')
+  async deleteAccount(@Req() req: RequestWithUser) {
+    return this.usersService.deleteAccount(req.user.id);
   }
 }

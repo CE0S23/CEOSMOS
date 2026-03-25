@@ -1,7 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { AppComponent } from './app/app.component';
@@ -11,7 +12,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(APP_ROUTES, withComponentInputBinding()),
     provideAnimationsAsync(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     providePrimeNG({
         theme: { preset: Aura, options: { darkModeSelector: '.dark' } }
     }),

@@ -1,11 +1,12 @@
-import { defineConfig } from '@prisma/config';
-import * as dotenv from 'dotenv';
+import path from "node:path";
+import { defineConfig } from "prisma/config";
+import dotenv from "dotenv";
 dotenv.config();
 
 export default defineConfig({
-  // @ts-ignore
   earlyAccess: true,
+  schema: path.join("prisma", "schema.prisma"),
   datasource: {
-    url: process.env.DATABASE_URL?.replace('.apirest.c-6.', '.'),
+    url: process.env.DATABASE_URL!,
   },
 });

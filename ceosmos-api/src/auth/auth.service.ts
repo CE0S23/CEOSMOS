@@ -1,177 +1,361 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { MailService } from '../mail/mail.service';
-import * as bcrypt from 'bcrypt';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
-import { randomBytes } from 'crypto';
-
-const rpID = process.env.RP_ID || 'localhost';
-const expectedOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:4200';
+import {
+  RegisterDto,
+  LoginDto,
+  WebAuthnRegisterVerifyDto,
+  WebAuthnLoginVerifyDto,
+} from './dto/auth.dto';
+import { createHash, randomBytes, randomUUID } from 'crypto';
+import * as bcrypt from 'bcrypt';
+import type { Request } from 'express';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private mailService: MailService,
-  ) {}
+  private readonly rpID: string;
+  private readonly rpName: string;
+  private readonly expectedOrigin: string;
 
-  async register(dto: RegisterDto) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly sessionsService: SessionsService,
+    private readonly mailService: MailService,
+  ) {
+    this.rpID = process.env.RP_ID ?? 'localhost';
+    this.rpName = process.env.RP_NAME ?? 'CEOSMOS';
+    this.expectedOrigin =
+      process.env.FRONTEND_ORIGIN ?? 'http://localhost:4200';
+  }
+
+  async register(dto: RegisterDto): Promise<{ message: string }> {
     const existing = await this.prisma.user.findFirst({
       where: { OR: [{ email: dto.email }, { username: dto.username }] },
     });
-    if (existing) throw new BadRequestException('Email or username already in use');
-
-    let passwordHash: string | undefined = undefined;
-    if (dto.password) {
-      passwordHash = await bcrypt.hash(dto.password, 12);
+    if (existing) {
+      throw new BadRequestException('Email or username already in use');
     }
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         username: dto.username,
         passwordHash,
+        emailVerified: false,
+        preferences: {
+          create: {
+            theme: 'dark',
+            flowTimeDefault: 60,
+          },
+        },
       },
     });
 
-    const code = randomBytes(3).toString('hex').toUpperCase(); // 6 chars
+    const rawCode = randomBytes(3).toString('hex').toUpperCase();
+    const hashedCode = createHash('sha256').update(rawCode).digest('hex');
+
     await this.prisma.emailToken.create({
       data: {
         userId: user.id,
-        code,
+        code: hashedCode,
         type: 'VERIFY_EMAIL',
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    await this.mailService.sendVerificationEmail(user.email, code);
 
-    return { message: 'User created. Please check email for verification.' };
+    await this.mailService.sendVerificationEmail(user.email, rawCode);
+
+    return { message: 'User created. Check your email for the verification code.' };
   }
 
-  async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user || !user.passwordHash || !user.emailVerified) {
-      throw new UnauthorizedException('Invalid credentials or email not verified');
+  async login(
+    dto: LoginDto,
+    req: Request,
+  ): Promise<{ accessToken: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
     }
-    const isValid = await bcrypt.compare(dto.password || '', user.passwordHash);
-    if (!isValid) throw new UnauthorizedException('Invalid credentials');
-    return this.createSession(user.id);
+
+    if (!user.emailVerified) {
+      throw new UnauthorizedException('Email not verified');
+    }
+
+    const isValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return this.buildJwtSession(user.id, req);
   }
 
-  async verifyEmail(email: string, code: string) {
+  async logout(userId: string): Promise<{ message: string }> {
+    await this.sessionsService.deleteByUserId(userId);
+    return { message: 'Logged out successfully' };
+  }
+
+  async verifyEmail(
+    email: string,
+    rawCode: string,
+  ): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
+
+    const hashedCode = createHash('sha256').update(rawCode).digest('hex');
 
     const token = await this.prisma.emailToken.findFirst({
       where: {
         userId: user.id,
         type: 'VERIFY_EMAIL',
+        code: hashedCode,
         used: false,
-        code,
         expiresAt: { gt: new Date() },
       },
     });
 
     if (!token) throw new BadRequestException('Invalid or expired code');
 
-    await this.prisma.emailToken.update({ where: { id: token.id }, data: { used: true } });
-    await this.prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
+    await this.prisma.$transaction([
+      this.prisma.emailToken.update({
+        where: { id: token.id },
+        data: { used: true },
+      }),
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      }),
+    ]);
 
     return { message: 'Email verified successfully' };
+  }
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new BadRequestException('User not found');
+    if (user.emailVerified) throw new BadRequestException('Email already verified');
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentTokensCount = await this.prisma.emailToken.count({
+      where: {
+        userId: user.id,
+        type: 'VERIFY_EMAIL',
+        createdAt: { gt: oneHourAgo },
+      },
+    });
+
+    if (recentTokensCount >= 3) {
+      throw new BadRequestException('Rate limit exceeded: max 3 requests per hour');
+    }
+
+    await this.prisma.emailToken.updateMany({
+      where: { userId: user.id, type: 'VERIFY_EMAIL', used: false },
+      data: { used: true },
+    });
+
+    const rawCode = randomBytes(3).toString('hex').toUpperCase();
+    const hashedCode = createHash('sha256').update(rawCode).digest('hex');
+
+    await this.prisma.emailToken.create({
+      data: {
+        userId: user.id,
+        code: hashedCode,
+        type: 'VERIFY_EMAIL',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    await this.mailService.sendVerificationEmail(user.email, rawCode);
+
+    return { message: 'Verification code resent successfully' };
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return { message: 'If the email exists, a password reset link has been sent.' };
+    }
+
+    const rawToken = `${randomUUID()}-${Date.now()}`;
+    const hashedToken = createHash('sha256').update(rawToken).digest('hex');
+
+    await this.prisma.emailToken.updateMany({
+      where: { userId: user.id, type: 'RESET_PASSWORD', used: false },
+      data: { used: true },
+    });
+
+    await this.prisma.emailToken.create({
+      data: {
+        userId: user.id,
+        code: hashedToken,
+        type: 'RESET_PASSWORD',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    await this.mailService.sendPasswordResetEmail(user.email, rawToken);
+
+    return { message: 'If the email exists, a password reset link has been sent.' };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+    
+    const tokenRecord = await this.prisma.emailToken.findFirst({
+      where: {
+        code: hashedToken,
+        type: 'RESET_PASSWORD',
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!tokenRecord) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: tokenRecord.userId },
+        data: { passwordHash },
+      }),
+      this.prisma.emailToken.update({
+        where: { id: tokenRecord.id },
+        data: { used: true },
+      }),
+    ]);
+
+    await this.sessionsService.deleteByUserId(tokenRecord.userId);
+
+    return { message: 'Password reset successfully' };
   }
 
   async generateWebAuthnRegisterOptions(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
 
-    const passkeys = await this.prisma.passkey.findMany({ where: { userId: user.id } });
-    const options = await generateRegistrationOptions({
-      rpName: 'CEOSMOS',
-      rpID,
-      userID: new Uint8Array(Buffer.from(user.id)),
-      userName: user.email,
-      excludeCredentials: passkeys.map(p => ({
-        id: p.credentialId,
-        type: 'public-key',
-      })),
-      authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+    const existingPasskeys = await this.prisma.passkey.findMany({
+      where: { userId: user.id },
     });
 
-    return options; // To send to frontend, usually save challenge in session too
+    const options = await generateRegistrationOptions({
+      rpName: this.rpName,
+      rpID: this.rpID,
+      userID: new Uint8Array(Buffer.from(user.id, 'utf-8')),
+      userName: user.email,
+      excludeCredentials: existingPasskeys.map((p) => ({
+        id: p.credentialId,
+        type: 'public-key' as const,
+      })),
+      authenticatorSelection: {
+        residentKey: 'required',
+        userVerification: 'preferred',
+      },
+    });
+
+    return options;
   }
 
-  async verifyWebAuthnRegister(email: string, body: any, expectedChallenge: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new BadRequestException();
+  async verifyWebAuthnRegister(dto: WebAuthnRegisterVerifyDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (!user) throw new BadRequestException('User not found');
 
     const verification = await verifyRegistrationResponse({
-      response: body,
-      expectedChallenge,
-      expectedOrigin,
-      expectedRPID: rpID,
+      response: dto.response as any,
+      expectedChallenge: dto.challenge,
+      expectedOrigin: this.expectedOrigin,
+      expectedRPID: this.rpID,
       requireUserVerification: false,
     });
 
-    if (verification.verified && verification.registrationInfo) {
-      const { credential, credentialDeviceType, credentialBackedUp } =
-        verification.registrationInfo;
-
-      await this.prisma.passkey.create({
-        data: {
-          credentialId: credential.id,
-          userId: user.id,
-          webAuthnUserId: Buffer.from(user.id).toString('base64url'),
-          publicKey: Buffer.from(credential.publicKey),
-          counter: BigInt(credential.counter),
-          deviceType: credentialDeviceType,
-          backedUp: credentialBackedUp,
-          transports: body.response.transports || [],
-        },
-      });
-      return { verified: true };
+    if (!verification.verified || !verification.registrationInfo) {
+      throw new BadRequestException('WebAuthn registration verification failed');
     }
-    return { verified: false };
+
+    const { credential, credentialDeviceType, credentialBackedUp } =
+      verification.registrationInfo;
+
+    await this.prisma.passkey.create({
+      data: {
+        credentialId: credential.id,
+        userId: user.id,
+        webAuthnUserId: Buffer.from(user.id, 'utf-8').toString('base64url'),
+        publicKey: Buffer.from(credential.publicKey),
+        counter: BigInt(credential.counter),
+        deviceType: credentialDeviceType,
+        backedUp: credentialBackedUp,
+        transports: (dto.response as any)?.response?.transports ?? [],
+      },
+    });
+
+    return { verified: true };
   }
 
   async generateWebAuthnLoginOptions(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
-    const passkeys = await this.prisma.passkey.findMany({ where: { userId: user.id } });
+
+    const passkeys = await this.prisma.passkey.findMany({
+      where: { userId: user.id },
+    });
+
+    if (passkeys.length === 0) {
+      throw new BadRequestException('No passkeys registered for this user');
+    }
 
     const options = await generateAuthenticationOptions({
-      rpID,
-      allowCredentials: passkeys.map(p => ({
+      rpID: this.rpID,
+      allowCredentials: passkeys.map((p) => ({
         id: p.credentialId,
-        type: 'public-key',
+        type: 'public-key' as const,
       })),
       userVerification: 'preferred',
     });
-    return options; // Needs to send back and save challenge temporarily
+
+    return options;
   }
 
-  async verifyWebAuthnLogin(email: string, body: any, expectedChallenge: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async verifyWebAuthnLogin(dto: WebAuthnLoginVerifyDto, req: Request) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) throw new BadRequestException('User not found');
 
-    const credentialID = body.id;
+    const credentialId = (dto.response as any).id as string;
     const passkey = await this.prisma.passkey.findUnique({
-      where: { credentialId: credentialID },
+      where: { credentialId },
     });
-    if (!passkey || passkey.userId !== user.id) throw new BadRequestException('Invalid credential');
+
+    if (!passkey || passkey.userId !== user.id) {
+      throw new UnauthorizedException('Invalid credential');
+    }
 
     const verification = await verifyAuthenticationResponse({
-      response: body,
-      expectedChallenge,
-      expectedOrigin,
-      expectedRPID: rpID,
+      response: dto.response as any,
+      expectedChallenge: dto.challenge,
+      expectedOrigin: this.expectedOrigin,
+      expectedRPID: this.rpID,
       credential: {
         id: passkey.credentialId,
         publicKey: new Uint8Array(passkey.publicKey),
@@ -181,35 +365,24 @@ export class AuthService {
       requireUserVerification: false,
     });
 
-    if (verification.verified) {
-      await this.prisma.passkey.update({
-        where: { credentialId: passkey.credentialId },
-        data: { counter: BigInt(verification.authenticationInfo.newCounter) },
-      });
-      return this.createSession(user.id);
+    if (!verification.verified) {
+      throw new UnauthorizedException('WebAuthn authentication failed');
     }
-    return { verified: false };
-  }
 
-  async createSession(userId: string) {
-    // End active sessions for single device usage if required
-    await this.prisma.session.deleteMany({ where: { userId } });
-
-    const token = randomBytes(32).toString('hex');
-    const session = await this.prisma.session.create({
-      data: {
-        userId,
-        token,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      },
+    await this.prisma.passkey.update({
+      where: { credentialId: passkey.credentialId },
+      data: { counter: BigInt(verification.authenticationInfo.newCounter) },
     });
 
-    const jwt = this.jwtService.sign({ userId, sessionId: session.id });
-    return { accessToken: jwt };
+    return this.buildJwtSession(user.id, req);
   }
 
-  async logout(userId: string) {
-    await this.prisma.session.deleteMany({ where: { userId } });
-    return { message: 'Logged out successfully' };
+  private async buildJwtSession(
+    userId: string,
+    req: Request,
+  ): Promise<{ accessToken: string }> {
+    const rawToken = await this.sessionsService.createSession(userId, req);
+    const accessToken = this.jwtService.sign({ userId, sessionToken: rawToken });
+    return { accessToken };
   }
 }
