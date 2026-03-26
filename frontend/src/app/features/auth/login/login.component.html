@@ -20,60 +20,66 @@
       </div>
     } @else {
       <div class="auth-options">
-        <p-tabView>
-          <!-- CONTRASENA TAB -->
-          <p-tabPanel header="Contraseña">
-            <form [formGroup]="loginForm" (ngSubmit)="loginWithPassword()" class="form-section">
-              <div class="field">
-                <input pInputText id="email" formControlName="email" type="email" placeholder="Correo electrónico" style="width: 100%" />
+        <p-tabs value="0">
+          <p-tablist>
+            <p-tab value="0">Contraseña</p-tab>
+            <p-tab value="1">Huella Digital</p-tab>
+          </p-tablist>
+          <p-tabpanels>
+            <!-- CONTRASENA TAB -->
+            <p-tabpanel value="0">
+              <form [formGroup]="loginForm" (ngSubmit)="loginWithPassword()" class="form-section">
+                <div class="field">
+                  <input pInputText id="email" formControlName="email" type="email" placeholder="Correo electrónico" style="width: 100%" />
+                </div>
+
+                <div class="field">
+                  <p-password id="password" formControlName="password" placeholder="Contraseña" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                </div>
+
+                <button pButton type="submit" label="Ingresar" [disabled]="loginForm.invalid" class="login-submit-btn"></button>
+
+                <div class="auth-links">
+                  <a routerLink="/forgot-password" class="auth-link">¿Olvidaste tu contraseña?</a>
+                  <br />
+                  <a routerLink="/register" class="auth-link">¿No tienes cuenta? Regístrate</a>
+                </div>
+              </form>
+            </p-tabpanel>
+
+            <!-- HUELLA DIGITAL TAB -->
+            <p-tabpanel value="1">
+              <div id="google-btn" class="google-btn-wrapper" aria-label="Iniciar sesion con Google"></div>
+
+              <div class="divider" role="separator" aria-label="o">
+                <span>o</span>
               </div>
 
-              <div class="field">
-                <p-password id="password" formControlName="password" placeholder="Contraseña" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
-              </div>
-
-              <button pButton type="submit" label="Ingresar" [disabled]="loginForm.invalid" class="login-submit-btn"></button>
-
-              <div class="auth-links">
-                <a routerLink="/forgot-password" class="auth-link">¿Olvidaste tu contraseña?</a>
-                <br />
-                <a routerLink="/register" class="auth-link">¿No tienes cuenta? Regístrate</a>
-              </div>
-            </form>
-          </p-tabPanel>
-
-          <!-- HUELLA DIGITAL TAB -->
-          <p-tabPanel header="Huella Digital">
-            <div id="google-btn" class="google-btn-wrapper" aria-label="Iniciar sesion con Google"></div>
-
-            <div class="divider" role="separator" aria-label="o">
-              <span>o</span>
-            </div>
-
-            @if (passkeyAvailable()) {
-              <div class="field">
-                <p class="privacy-note">Asegúrate de haber ingresado tu correo en la otra pestaña antes de usar huella digital.</p>
-              </div>
-              <button
-                id="passkey-btn"
-                class="passkey-btn"
-                (click)="signInWithPasskey()"
-                aria-label="Iniciar sesion con huella digital o biometria"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M7 11c0-2.76 2.24-5 5-5s5 2.24 5 5v1M5 12a7 7 0 0114 0v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4z"/>
-                  <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
-                </svg>
-                Iniciar con huella digital
-              </button>
-            } @else {
-              <p class="passkey-unavailable">
-                La autenticacion biometrica no esta disponible en este dispositivo.
-              </p>
-            }
-          </p-tabPanel>
-        </p-tabView>
+              @if (passkeyAvailable()) {
+                <div class="field">
+                  <p class="privacy-note">Asegúrate de haber ingresado tu correo en la otra pestaña antes de usar huella digital.</p>
+                </div>
+                <button
+                  id="passkey-btn"
+                  class="passkey-btn"
+                  (click)="signInWithPasskey()"
+                  aria-label="Iniciar sesion con huella digital o biometria"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M7 11c0-2.76 2.24-5 5-5s5 2.24 5 5v1M5 12a7 7 0 0114 0v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4z"/>
+                    <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+                  </svg>
+                  Iniciar con huella digital
+                </button>
+              } @else {
+                <p class="passkey-unavailable">
+                  La autenticacion biometrica no esta disponible en este dispositivo.
+                </p>
+              }
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
 
         @if (errorMessage()) {
           <p class="error-msg" role="alert" aria-live="assertive">{{ errorMessage() }}</p>

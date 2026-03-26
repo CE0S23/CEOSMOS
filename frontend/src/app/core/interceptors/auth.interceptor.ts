@@ -12,11 +12,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isApiUrl = req.url.startsWith('/') || !req.url.startsWith('http');
   const targetUrl = isApiUrl ? `${environment.apiUrl}${req.url.startsWith('/') ? '' : '/'}${req.url}` : req.url;
 
-  const authReq = req.clone({
+  const token = localStorage.getItem('token');
+
+  let authReq = req.clone({
     url: targetUrl,
     withCredentials: true
   });
 
+  if (token) {
+    authReq = authReq.clone({
+      headers: authReq.headers.set('Authorization', `Bearer ${token}`)
+    });
+  }
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {

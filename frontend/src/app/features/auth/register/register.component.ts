@@ -8,6 +8,11 @@ import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AuthService } from '../../../core/services/auth.service';
 
+const passwordMatchValidator = (control: import('@angular/forms').AbstractControl): import('@angular/forms').ValidationErrors | null => {
+  return control.get('password')?.value === control.get('confirmPassword')?.value
+    ? null : { mismatch: true };
+};
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -40,12 +45,7 @@ export class RegisterComponent {
       Validators.minLength(8)
     ]],
     confirmPassword: ['', [Validators.required]]
-  }, { validators: this.passwordMatchValidator });
-
-  passwordMatchValidator(g: FormGroup) {
-    return g.get('password')?.value === g.get('confirmPassword')?.value
-      ? null : { mismatch: true };
-  }
+  }, { validators: [passwordMatchValidator] });
 
   async register() {
     if (this.registerForm.invalid) return;

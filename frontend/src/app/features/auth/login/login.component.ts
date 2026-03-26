@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../../core/services/auth.service';
@@ -27,7 +27,7 @@ declare const google: {
   imports: [
     ButtonModule, 
     ProgressSpinnerModule, 
-    TabViewModule, 
+    TabsModule, 
     InputTextModule, 
     PasswordModule, 
     ReactiveFormsModule, 
