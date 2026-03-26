@@ -6,6 +6,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdatePreferencesDto, UpdateProfileDto } from './dto/users.dto';
 
+// Role se importará de @prisma/client una vez que se genere
+// tras ejecutar: npx prisma db push && npx prisma generate
+type Role = 'USER' | 'ADMIN';
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -30,6 +34,7 @@ export class UsersService {
       email: user.email,
       username: user.username,
       emailVerified: user.emailVerified,
+      role: (user as any).role,
       preferences: user.preferences,
       mediaItemsCount: user._count.mediaItems,
     };
@@ -79,5 +84,64 @@ export class UsersService {
       where: { id: userId },
     });
     return { message: 'Account deleted successfully' };
+  }
+
+  // ── ADMIN METHODS ─────────────────────────────────────────
+
+  async findAllUsers() {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        emailVerified: true,
+        createdAt: true,
+        _count: { select: { mediaItems: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return users.map((u) => ({
+      ...u,
+      role: (u as any).role,
+      mediaItemsCount: u._count.mediaItems,
+      _count: undefined,
+    }));
+  }
+
+  async deleteUserById(targetId: string, requesterId: string) {
+    if (targetId === requesterId) {
+      throw new BadRequestException(
+        'Admins cannot delete their own account via this endpoint',
+      );
+    }
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+    });
+    if (!target) throw new NotFoundException('User not found');
+
+    await this.prisma.user.delete({ where: { id: targetId } });
+    return { message: `User ${target.email} deleted successfully` };
+  }
+
+  async changeUserRole(
+    targetId: string,
+    role: Role,
+    requesterId: string,
+  ) {
+    if (targetId === requesterId) {
+      throw new BadRequestException(
+        'Admins cannot change their own role via this endpoint',
+      );
+    }
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+    });
+    if (!target) throw new NotFoundException('User not found');
+
+    const updated = await this.prisma.user.update({
+      where: { id: targetId },
+      data: { role: role as any },
+    });
+    return { id: updated.id, email: updated.email, role: (updated as any).role };
   }
 }

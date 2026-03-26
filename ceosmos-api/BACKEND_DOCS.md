@@ -6,7 +6,7 @@ El backend de CEOSMOS ha sido implementado desde cero siguiendo altos estándare
 Para que el sistema funcione (tanto en local como en Railway), debes configurar las siguientes variables:
 
 - `DATABASE_URL`: `postgresql://tu-usuario:tu-password@ep-green-hall-anvbwgw9.us-east-1.aws.neon.tech/neondb?sslmode=require`
-- `PORT`: `3000` (Opcional, Railway lo inyectará automáticamente)
+- `PORT`: `8080` (Opcional, Railway lo inyectará automáticamente. Default local: **8080**)
 - `FRONTEND_ORIGIN`: `https://ceosmos.vercel.app` (Local: `http://localhost:4200`)
 - `RP_ID`: `ceosmos.vercel.app` (Local: `localhost`. Clave para WebAuthn)
 - `JWT_SECRET`: Texto seguro (Ej. `un_secreto_increiblemente_largo_y_dificil_ceosmos_2026!`)
@@ -19,38 +19,53 @@ Todas las rutas están prefijadas con `/api` y protegidas con **JwtAuthGuard** (
 ### 1. Obtener Perfil Actual (`GET /api/users/me`)
 Retorna los datos del usuario logueado en sesión, incluyendo sus preferencias, biblioteca de medios y llaves de acceso enmascaradas (sin el passwordHash).
 
-### 2. Actualizar Perfil (`PATCH /api/users/profile`)
+### 2. Actualizar Preferencias (`PATCH /api/users/preferences`)
 - **Body Request:**
   ```json
   {
-    "username": "nuevo_nombre",
-    "preferences": {
-      "theme": "light",
-      "flowTimeDefault": 45
-    }
+    "theme": "dark",
+    "flowTimeDefault": 60
   }
   ```
-- **Nota:** Valida automáticamente si el username o email ya están en uso por otros. Si mandas `preferences`, actualiza individualmente (o crea) los campos.
 
-### 3. Solicitar Cambio de Contraseña (`POST /api/users/change-password-request`)
-- Inicia el flujo seguro de cambio de contraseña.
-- Emite un email con un enlace hacia tu frontend.
-- **Acción del backend:** Crea un `Token` SHA-256 en la BBDD con exp de 1 hora y manda un email.
-
-### 4. Confirmar Cambio de Contraseña (`POST /api/users/confirm-password-change`)
+### 3. Actualizar Perfil (`PATCH /api/users/profile`)
 - **Body Request:**
   ```json
   {
-    "token": "el_token_crudo_de_la_url",
-    "newPassword": "mi_nueva_password_super_segura123"
+    "username": "nuevo_nombre"
   }
   ```
-- **Nota:** Compara el hash SHA-256 del token, verifica que no esté caducado y re-encripta el nuevo password (Bcrypt coste 12).
+- **Nota:** Valida automáticamente si el username ya está en uso por otro usuario.
 
-### 5. Eliminar Cuenta (`DELETE /api/users/:id`)
-Borra irreversiblemente la cuenta y (por el `onDelete: Cascade` en Prisma) elimina las contraseñas, meditecas, y preferencias asociadas. El `:id` de la ruta tiene que coincidir con el ID extraído de la cookie de quien hace la solicitud.
+### 4. Eliminar Cuenta Propia (`DELETE /api/users/me`)
+Borra irreversiblemente la cuenta del usuario autenticado y (por el `onDelete: Cascade` en Prisma) elimina las preferencias, mediaItems, sessions y emailTokens asociados.
+
+---
+
+## 🔐 Endpoints Exclusivos de ADMIN (Role-Based Access Control)
+Estas rutas requieren que el usuario tenga `role = ADMIN`. Están protegidas con `JwtAuthGuard` + `RolesGuard`.
+
+### 5. Listar todos los usuarios (`GET /api/users`)
+Retorna todos los usuarios registrados, ordenados por fecha de creación (más recientes primero). Incluye `mediaItemsCount`.
+
+### 6. Eliminar usuario por ID (`DELETE /api/users/:id`)
+- **Params:** `:id` — UUID del usuario a eliminar.
+- **Restricción:** Un admin no puede eliminarse a sí mismo con este endpoint (usar `DELETE /api/users/me`).
+- **Respuesta:** `{ message: "User <email> deleted successfully" }`
+
+### 7. Cambiar rol de usuario (`PATCH /api/users/:id/role`)
+- **Params:** `:id` — UUID del usuario a modificar.
+- **Body Request:**
+  ```json
+  { "role": "ADMIN" }
+  ```
+  Valores válidos: `"USER"` | `"ADMIN"`
+- **Restricción:** Un admin no puede cambiar su propio rol con este endpoint.
+- **Respuesta:** `{ id, email, role }`
+
+---
 
 ## 🛠 Comandos base para continuar desarrollando
-- Iniciar Servidor: `npm run start:dev`
+- Iniciar Servidor: `npm run start:dev` (Puerto: **8080**)
 - Sincronizar BBDD: `npx prisma db push`
 - Generar Tipos: `npx prisma generate`
