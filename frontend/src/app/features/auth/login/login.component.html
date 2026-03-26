@@ -25,7 +25,7 @@
           <p-tabPanel header="Contraseña">
             <form [formGroup]="loginForm" (ngSubmit)="loginWithPassword()" class="form-section">
               <div class="field">
-                <input pInputText id="email" formControlName="email" type="email" placeholder="Correo electrónico" style="width: 100%" />
+                <input pInputText id="email" formControlName="email" type="email" autocomplete="username webauthn" placeholder="Correo electrónico" style="width: 100%" />
               </div>
 
               <div class="field">
@@ -51,9 +51,6 @@
             </div>
 
             @if (passkeyAvailable()) {
-              <div class="field">
-                <p class="privacy-note">Asegúrate de haber ingresado tu correo en la otra pestaña antes de usar huella digital.</p>
-              </div>
               <button
                 id="passkey-btn"
                 class="passkey-btn"

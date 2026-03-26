@@ -27,6 +27,13 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(m => m.ProfileComponent),
+    title: 'CEOSmos - Mi Perfil',
+    canActivate: [authGuard]
+  },
+  {
     path: 'privacidad',
     loadComponent: () =>
       import('./features/pages/privacidad/privacidad.component').then(m => m.PrivacidadComponent),

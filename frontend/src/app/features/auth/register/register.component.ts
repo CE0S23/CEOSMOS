@@ -60,7 +60,7 @@ export class RegisterComponent {
       });
       // Store email temporarily if needed for verification
       localStorage.setItem('verify_email', this.registerForm.value.email);
-      this.router.navigate(['/verify-email']);
+      this.router.navigate(['/verify-email'], { queryParams: { email: this.registerForm.value.email } });
     } catch (err: any) {
       this.errorMessage.set(err.error?.message || 'Error al registrar la cuenta');
     } finally {

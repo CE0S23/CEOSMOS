@@ -1,0 +1,76 @@
+<div class="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+  <p-toast></p-toast>
+  <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+    
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-center">
+      <h2 class="text-3xl font-extrabold text-white tracking-tight">Mi Perfil</h2>
+      <p class="text-blue-100 mt-2">Gestiona tu información y seguridad</p>
+    </div>
+
+    <div class="p-8 space-y-8">
+      <!-- Info Personal -->
+      <section>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+          <i class="pi pi-user mr-2 text-blue-500"></i> Información Personal
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-user"></i></span>
+            <input pInputText [value]="auth.user()?.name || auth.user()?.username" readonly class="w-full bg-gray-50 dark:bg-gray-700" placeholder="Nombre" />
+          </div>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-envelope"></i></span>
+            <input pInputText [value]="auth.user()?.email" readonly class="w-full bg-gray-50 dark:bg-gray-700" placeholder="Correo Electrónico" />
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-gray-200 dark:border-gray-700">
+
+      <!-- Seguridad -->
+      <section>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+          <i class="pi pi-shield mr-2 text-indigo-500"></i> Seguridad
+        </h3>
+        
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="space-y-4 max-w-md">
+          <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">Cambiar Contraseña</p>
+          <div>
+            <p-password formControlName="currentPassword" [feedback]="false" [toggleMask]="true" placeholder="Contraseña actual" styleClass="w-full" inputStyleClass="w-full p-3"></p-password>
+          </div>
+          <div>
+            <p-password formControlName="newPassword" [toggleMask]="true" placeholder="Nueva contraseña" styleClass="w-full" inputStyleClass="w-full p-3">
+              <ng-template pTemplate="header">
+                <h6>Mínimo 8 caracteres</h6>
+              </ng-template>
+              <ng-template pTemplate="footer">
+                <p class="mt-2 text-xs">Debe contener mayúsculas, minúsculas y un número.</p>
+              </ng-template>
+            </p-password>
+          </div>
+          <div>
+            <p-password formControlName="confirmPassword" [feedback]="false" [toggleMask]="true" placeholder="Confirmar nueva contraseña" styleClass="w-full" inputStyleClass="w-full p-3"></p-password>
+          </div>
+          
+          <p-button type="submit" [disabled]="passwordForm.invalid || isChangingPassword()" styleClass="w-full p-button-outlined">
+            <span class="flex items-center justify-center w-full">
+              <p-progressSpinner *ngIf="isChangingPassword()" strokeWidth="4" animationDuration="1s" class="w-4 h-4 mr-2"></p-progressSpinner>
+              Cambiar Contraseña
+            </span>
+          </p-button>
+        </form>
+
+        <div class="mt-8">
+          <p class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Autenticación Biométrica (Passkeys)</p>
+          <p-button (onClick)="linkPasskey()" [disabled]="!passkeyAvailable() || isLinkingPasskey()" styleClass="w-full p-button-success" icon="pi pi-fingerprint">
+            <span class="flex items-center justify-center w-full">
+              <p-progressSpinner *ngIf="isLinkingPasskey()" strokeWidth="4" animationDuration="1s" class="w-4 h-4 mr-2"></p-progressSpinner>
+              <span class="ml-2">Vincular huella digital</span>
+            </span>
+          </p-button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>

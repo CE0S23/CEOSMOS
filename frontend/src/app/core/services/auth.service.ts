@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MessageService } from 'primeng/api';
 import { UserProfile, AuthState } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
@@ -14,6 +15,7 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
+  private readonly messageService = inject(MessageService);
 
   readonly state = this._state.asReadonly();
   readonly user = computed(() => this._state().user);
@@ -55,6 +57,10 @@ export class AuthService {
     return user;
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+    return firstValueFrom(this.http.post(`${this.apiUrl}/auth/change-password`, { currentPassword, newPassword }));
+  }
+
   async register(data: any): Promise<any> {
     return firstValueFrom(this.http.post(`${this.apiUrl}/auth/register`, data));
   }
@@ -74,16 +80,16 @@ export class AuthService {
     return response;
   }
 
-  async webAuthnRegisterOptions(email: string): Promise<any> {
-    return firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/register/options`, { email }));
+  async webAuthnRegisterOptions(): Promise<any> {
+    return firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/register/options`, {}));
   }
 
   async webAuthnRegisterVerify(data: any): Promise<any> {
     return firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/register/verify`, data));
   }
 
-  async webAuthnLoginOptions(email: string): Promise<any> {
-    return firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/login/options`, { email }));
+  async webAuthnLoginOptions(email?: string): Promise<any> {
+    return firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/login/options`, email ? { email } : {}));
   }
 
   async webAuthnLoginVerify(data: any): Promise<any> {
@@ -126,6 +132,7 @@ export class AuthService {
       };
       this.setUser(user);
     } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Fallo al autenticar con Google' });
       this.setLoading(false);
     }
   }

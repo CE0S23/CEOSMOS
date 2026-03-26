@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -24,6 +24,7 @@ export class VerifyEmailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   email = '';
   readonly isLoading = signal(false);
@@ -38,7 +39,7 @@ export class VerifyEmailComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.email = localStorage.getItem('verify_email') || '';
+    this.email = this.route.snapshot.queryParamMap.get('email') || localStorage.getItem('verify_email') || '';
     if (!this.email) {
       this.router.navigate(['/login']);
     }
