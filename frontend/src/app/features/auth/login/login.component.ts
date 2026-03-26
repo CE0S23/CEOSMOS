@@ -116,6 +116,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     try {
       const emailForm = this.loginForm.get('email')?.value;
+      if (!emailForm) {
+        throw new Error('Ingresa tu correo en el tab de contraseña antes de usar huella digital');
+      }
 
       // 1. Get options from backend
       const options = await this.auth.webAuthnLoginOptions(emailForm);
@@ -128,13 +131,9 @@ export class LoginComponent implements OnInit, OnDestroy {
       
       this.router.navigate(['/feed']);
     } catch (err: any) {
-      if (err instanceof Error && err.name === 'NotAllowedError') {
-        this.errorMessage.set('Operación cancelada o dispositivo no compatible.');
-      } else {
-        const message = err?.error?.message || err?.response?.data?.message || err.message || 'Error de autenticación';
-        this.errorMessage.set(message);
-      }
-      console.error('Passkey error:', err);
+      const message = err?.response?.data?.message || err.message || 'Error de autenticación';
+      this.errorMessage.set(message);
+      console.error('Passkey error:', message);
     } finally {
       this.auth.setLoading(false);
     }

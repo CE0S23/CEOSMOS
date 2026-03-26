@@ -55,7 +55,6 @@ export class AuthService {
       data: {
         email: dto.email,
         username: dto.username,
-        role: dto.email === 'ras3ec@gmail.com' ? 'ADMIN' : 'USER',
         passwordHash,
         emailVerified: false,
         preferences: {
@@ -111,29 +110,6 @@ export class AuthService {
   async logout(userId: string): Promise<{ message: string }> {
     await this.sessionsService.deleteByUserId(userId);
     return { message: 'Logged out successfully' };
-  }
-
-  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid current password');
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 12);
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash },
-    });
-
-    await this.mailService.sendPasswordChangedNotificationEmail(user.email);
-
-    return { message: 'Password changed successfully' };
   }
 
   async verifyEmail(
@@ -273,8 +249,8 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async generateWebAuthnRegisterOptions(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  async generateWebAuthnRegisterOptions(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
 
     const existingPasskeys = await this.prisma.passkey.findMany({
@@ -299,9 +275,9 @@ export class AuthService {
     return options;
   }
 
-  async verifyWebAuthnRegister(userId: string, dto: WebAuthnRegisterVerifyDto) {
+  async verifyWebAuthnRegister(dto: WebAuthnRegisterVerifyDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: dto.email },
     });
     if (!user) throw new BadRequestException('User not found');
 
@@ -336,16 +312,16 @@ export class AuthService {
     return { verified: true };
   }
 
-  async generateWebAuthnLoginOptions(email?: string) {
-    let passkeys: Array<{ credentialId: string }> = [];
+  async generateWebAuthnLoginOptions(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new BadRequestException('User not found');
 
-    if (email) {
-      const user = await this.prisma.user.findUnique({ where: { email } });
-      if (user) {
-        passkeys = await this.prisma.passkey.findMany({
-          where: { userId: user.id },
-        });
-      }
+    const passkeys = await this.prisma.passkey.findMany({
+      where: { userId: user.id },
+    });
+
+    if (passkeys.length === 0) {
+      throw new BadRequestException('No passkeys registered for this user');
     }
 
     const options = await generateAuthenticationOptions({
@@ -361,18 +337,19 @@ export class AuthService {
   }
 
   async verifyWebAuthnLogin(dto: WebAuthnLoginVerifyDto, req: Request) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (!user) throw new BadRequestException('User not found');
+
     const credentialId = (dto.response as any).id as string;
     const passkey = await this.prisma.passkey.findUnique({
       where: { credentialId },
     });
 
-    if (!passkey) {
+    if (!passkey || passkey.userId !== user.id) {
       throw new UnauthorizedException('Invalid credential');
     }
-    
-    const user = await this.prisma.user.findUnique({ where: { id: passkey.userId }});
-    if (!user) throw new UnauthorizedException('User not found');
-
 
     const verification = await verifyAuthenticationResponse({
       response: dto.response as any,

@@ -101,27 +101,4 @@ export class MailService {
       }
     }
   }
-
-  async sendPasswordChangedNotificationEmail(email: string): Promise<void> {
-    const html = `
-      <div style="background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; padding: 40px; text-align: center;">
-        <h1 style="color: #58a6ff;">Contraseña Actualizada</h1>
-        <p style="font-size: 16px;">Tu contraseña fue cambiada exitosamente.</p>
-        <p style="font-size: 14px; color: #8b949e;">Si no fuiste tú, por favor contacta a soporte inmediatamente.</p>
-      </div>
-    `;
-
-    try {
-      await this.mailerService.sendMail({
-        to: email,
-        subject: 'Tu contraseña fue cambiada exitosamente - CEOSMOS',
-        html,
-      });
-      this.logger.log(`Password changed notification email sent to ${email}`);
-    } catch (e) {
-      if (e instanceof Error) {
-        this.logger.error(`Error sending password changed notification: ${e.message}`, e.stack);
-      }
-    }
-  }
 }

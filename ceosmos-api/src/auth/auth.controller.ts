@@ -1,6 +1,6 @@
+import {
   Controller,
   Post,
-  Patch,
   Body,
   UseGuards,
   Req,
@@ -23,7 +23,6 @@ import {
   ResendVerificationDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-  ChangePasswordDto,
 } from './dto/auth.dto';
 
 const COOKIE_OPTIONS = {
@@ -92,31 +91,16 @@ export class AuthController {
     return { success: true };
   }
 
-  @Patch('change-password')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async changePassword(
-    @Body() dto: ChangePasswordDto,
-    @Req() req: Request & { user: { id: string } },
-  ) {
-    return this.authService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
-  }
-
   @Post('webauthn/register/options')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async webAuthnRegisterOptions(@Req() req: Request & { user: { id: string } }) {
-    return this.authService.generateWebAuthnRegisterOptions(req.user.id);
+  async webAuthnRegisterOptions(@Body() dto: WebAuthnRegisterOptionsDto) {
+    return this.authService.generateWebAuthnRegisterOptions(dto.email);
   }
 
   @Post('webauthn/register/verify')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async webAuthnRegisterVerify(
-    @Body() dto: WebAuthnRegisterVerifyDto,
-    @Req() req: Request & { user: { id: string } },
-  ) {
-    return this.authService.verifyWebAuthnRegister(req.user.id, dto);
+  async webAuthnRegisterVerify(@Body() dto: WebAuthnRegisterVerifyDto) {
+    return this.authService.verifyWebAuthnRegister(dto);
   }
 
   @Post('webauthn/login/options')

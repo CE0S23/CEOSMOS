@@ -2,12 +2,10 @@ export type AuthProvider = 'google' | 'passkey';
 
 export interface UserProfile {
   id: string;
-  name?: string;
-  username?: string;
+  name: string;
   email: string;
   picture?: string;
-  provider?: AuthProvider;
-  role?: string;
+  provider: AuthProvider;
 }
 
 export interface GoogleCredentialResponse {
