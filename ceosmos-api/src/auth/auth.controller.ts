@@ -76,7 +76,7 @@ export class AuthController {
   ) {
     const session = await this.authService.login(dto, req);
     res.cookie('Authentication', session.accessToken, COOKIE_OPTIONS);
-    return { success: true };
+    return { success: true, token: session.accessToken };
   }
 
   @Post('logout')
@@ -118,6 +118,6 @@ export class AuthController {
   ) {
     const session = await this.authService.verifyWebAuthnLogin(dto, req);
     res.cookie('Authentication', session.accessToken, COOKIE_OPTIONS);
-    return { success: true };
+    return { success: true, token: session.accessToken };
   }
 }
