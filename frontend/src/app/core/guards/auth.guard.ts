@@ -2,6 +2,8 @@ import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+const AUTH_PATHS = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password'];
+
 export const authGuard: CanActivateFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -23,6 +25,14 @@ export const authGuard: CanActivateFn = async () => {
 export const guestGuard: CanActivateFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
+
+  // If the user is already on an auth route, skip the network check entirely.
+  // Without this, navigating to /login would fire getMe() → 401 → interceptor
+  // redirects back to /login → guestGuard fires again → infinite loop.
+  const isAlreadyOnAuthRoute = AUTH_PATHS.some(p => router.url.includes(p));
+  if (isAlreadyOnAuthRoute) {
+    return true;
+  }
 
   if (authService.isAuthenticated()) {
     return router.parseUrl('/');

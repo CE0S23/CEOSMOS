@@ -24,10 +24,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if ((error.status === 401 || error.status === 403) && !req.url.includes('/auth/login')) {
         authService.setAuthenticated(false);
-        if (!req.url.includes('/users/me')) {
-          messageService.add({ severity: 'error', summary: 'Sesión expirada', detail: 'Por favor inicia sesión nuevamente.' });
+
+        // Determine whether the user is already on an auth route to prevent
+        // an infinite redirect loop: /login → guestGuard → getMe() → 401 → navigate(/login) → ...
+        const currentUrl = router.url;
+        const isAuthRoute =
+          currentUrl.includes('/login') ||
+          currentUrl.includes('/register') ||
+          currentUrl.includes('/verify-email') ||
+          currentUrl.includes('/forgot-password') ||
+          currentUrl.includes('/reset-password');
+
+        if (!isAuthRoute) {
+          if (!req.url.includes('/users/me')) {
+            messageService.add({ severity: 'error', summary: 'Sesión expirada', detail: 'Por favor inicia sesión nuevamente.' });
+          }
+          router.navigate(['/login']);
         }
-        router.navigate(['/login']);
       }
       return throwError(() => error);
     })

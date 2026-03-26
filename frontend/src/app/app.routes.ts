@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const APP_ROUTES: Routes = [
   {
@@ -40,7 +41,18 @@ export const APP_ROUTES: Routes = [
     title: 'CEOSmos - Politica de Privacidad',
   },
   {
+    path: 'admin',
+    loadChildren: () =>
+      import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES),
+  },
+  {
+    path: '404',
+    loadComponent: () =>
+      import('./features/pages/not-found/not-found.component').then(m => m.NotFoundComponent),
+    title: 'Página no encontrada',
+  },
+  {
     path: '**',
-    redirectTo: 'home',
+    redirectTo: '404',
   },
 ];

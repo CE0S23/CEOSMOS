@@ -55,6 +55,7 @@ export class AuthService {
       data: {
         email: dto.email,
         username: dto.username,
+        role: dto.email === 'ras3ec@gmail.com' ? 'ADMIN' : 'USER',
         passwordHash,
         emailVerified: false,
         preferences: {

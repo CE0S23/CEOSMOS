@@ -53,6 +53,10 @@
         >{{ link.label }}</a>
       }
       
+      @if (auth.user()?.role === 'ADMIN') {
+        <a routerLink="/admin" class="nav-link font-bold text-yellow-500" aria-label="Administrador">Admin Panel</a>
+      }
+      
       <button class="nav-link btn-ghost-sm" (click)="op.toggle($event)" aria-label="Enlaces externos">
         Recursos ▾
       </button>
@@ -114,6 +118,15 @@
           <a [routerLink]="link.path" class="sidebar-link" (click)="sidebarOpen.set(false)">
             <span class="sidebar-icon">{{ link.icon }}</span>
             {{ link.label }}
+          </a>
+        </li>
+      }
+
+      @if (auth.user()?.role === 'ADMIN') {
+        <li>
+          <a routerLink="/admin" class="sidebar-link font-bold text-yellow-500" (click)="sidebarOpen.set(false)">
+            <span class="sidebar-icon">⚙</span>
+            Admin Panel
           </a>
         </li>
       }
