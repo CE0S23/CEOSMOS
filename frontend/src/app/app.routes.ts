@@ -18,7 +18,6 @@ export const APP_ROUTES: Routes = [
     path: '', // Maps to /login, /register, etc directly from auth.routes
     loadChildren: () =>
       import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
-    canActivate: [guestGuard]
   },
   {
     path: 'feed',
