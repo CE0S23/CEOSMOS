@@ -1,0 +1,80 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1 class="admin-title">Panel de Administración</h1>
+    <p class="admin-sub">Gestión de usuarios CEOSMOS</p>
+  </div>
+
+  @if (error()) {
+    <div class="admin-error">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="admin-loading">Cargando usuarios...</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Verificado</th>
+            <th>Rol</th>
+            <th>Registrado</th>
+            <th>Media</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr [class.editing]="editingId() === user.id">
+              <td>
+                @if (editingId() === user.id) {
+                  <input class="edit-input" [ngModel]="editUsername()" (ngModelChange)="editUsername.set($event)" />
+                } @else {
+                  {{ user.username }}
+                }
+              </td>
+              <td>
+                @if (editingId() === user.id) {
+                  <input class="edit-input" type="email" [ngModel]="editEmail()" (ngModelChange)="editEmail.set($event)" />
+                } @else {
+                  {{ user.email }}
+                }
+              </td>
+              <td>
+                <span [class]="user.emailVerified ? 'badge badge-ok' : 'badge badge-no'">
+                  {{ user.emailVerified ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              <td>
+                <span [class]="user.role === 'ADMIN' ? 'badge badge-admin' : 'badge badge-user'">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>{{ user.mediaItemsCount }}</td>
+              <td class="actions">
+                @if (editingId() === user.id) {
+                  <button class="btn-save" (click)="saveEdit(user.id)" [disabled]="saving()">
+                    {{ saving() ? '...' : 'Guardar' }}
+                  </button>
+                  <button class="btn-cancel" (click)="cancelEdit()">Cancelar</button>
+                } @else {
+                  <button class="btn-edit" (click)="startEdit(user)" title="Editar">✏️</button>
+                  <button class="btn-role" (click)="toggleRole(user)" [title]="user.role === 'ADMIN' ? 'Quitar admin' : 'Hacer admin'">
+                    {{ user.role === 'ADMIN' ? '👤' : '🛡️' }}
+                  </button>
+                  <button class="btn-delete" (click)="deleteUser(user)" title="Eliminar">🗑️</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (users().length === 0) {
+        <p class="empty-state">No hay otros usuarios registrados.</p>
+      }
+    </div>
+  }
+</div>

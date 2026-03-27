@@ -15,7 +15,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { UpdatePreferencesDto, UpdateProfileDto } from './dto/users.dto';
+import { UpdatePreferencesDto, UpdateProfileDto, AdminUpdateUserDto } from './dto/users.dto';
 import { IsEnum } from 'class-validator';
 
 class ChangeRoleDto {
@@ -85,5 +85,14 @@ export class UsersController {
     @Req() req: RequestWithUser,
   ) {
     return this.usersService.changeUserRole(targetId, dto.role, req.user.id);
+  }
+
+  @Patch(':id')
+  @Roles('ADMIN')
+  async updateUser(
+    @Param('id') targetId: string,
+    @Body() dto: AdminUpdateUserDto,
+  ) {
+    return this.usersService.updateUserById(targetId, dto);
   }
 }

@@ -1,4 +1,4 @@
-import { IsString, IsNumber, Min, Max, IsIn, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsNumber, Min, Max, IsIn, IsOptional, MinLength, MaxLength, IsEmail } from 'class-validator';
 
 export class UpdatePreferencesDto {
   @IsOptional()
@@ -14,6 +14,18 @@ export class UpdatePreferencesDto {
 }
 
 export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(30)
+  username?: string;
+}
+
+export class AdminUpdateUserDto {
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
   @IsOptional()
   @IsString()
   @MinLength(3)

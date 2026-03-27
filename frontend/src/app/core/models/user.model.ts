@@ -4,8 +4,20 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  username?: string;
   picture?: string;
   provider: AuthProvider;
+  role?: 'USER' | 'ADMIN';
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  username: string;
+  emailVerified: boolean;
+  role: 'USER' | 'ADMIN';
+  createdAt: string;
+  mediaItemsCount: number;
 }
 
 export interface GoogleCredentialResponse {

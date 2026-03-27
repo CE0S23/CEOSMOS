@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const APP_ROUTES: Routes = [
   {
@@ -31,6 +32,13 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/pages/privacidad/privacidad.component').then(m => m.PrivacidadComponent),
     title: 'CEOSmos - Politica de Privacidad',
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./features/admin/admin.component').then(m => m.AdminComponent),
+    title: 'CEOSmos - Admin',
+    canActivate: [adminGuard],
   },
   {
     path: '**',

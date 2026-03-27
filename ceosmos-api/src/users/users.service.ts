@@ -4,10 +4,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdatePreferencesDto, UpdateProfileDto } from './dto/users.dto';
+import { UpdatePreferencesDto, UpdateProfileDto, AdminUpdateUserDto } from './dto/users.dto';
 
-// Role se importará de @prisma/client una vez que se genere
-// tras ejecutar: npx prisma db push && npx prisma generate
 type Role = 'USER' | 'ADMIN';
 
 @Injectable()
@@ -79,7 +77,6 @@ export class UsersService {
   }
 
   async deleteAccount(userId: string) {
-    // Prisma cascade drops passkeys, sessions, emailTokens, mediaItems and preferences.
     await this.prisma.user.delete({
       where: { id: userId },
     });
@@ -90,11 +87,13 @@ export class UsersService {
 
   async findAllUsers() {
     const users = await this.prisma.user.findMany({
+      where: { deletedAt: null },
       select: {
         id: true,
         email: true,
         username: true,
         emailVerified: true,
+        role: true,
         createdAt: true,
         _count: { select: { mediaItems: true } },
       },
@@ -102,7 +101,6 @@ export class UsersService {
     });
     return users.map((u) => ({
       ...u,
-      role: (u as any).role,
       mediaItemsCount: u._count.mediaItems,
       _count: undefined,
     }));
@@ -117,17 +115,16 @@ export class UsersService {
     const target = await this.prisma.user.findUnique({
       where: { id: targetId },
     });
-    if (!target) throw new NotFoundException('User not found');
+    if (!target || target.deletedAt) throw new NotFoundException('User not found');
 
-    await this.prisma.user.delete({ where: { id: targetId } });
+    await this.prisma.user.update({
+      where: { id: targetId },
+      data: { deletedAt: new Date() },
+    });
     return { message: `User ${target.email} deleted successfully` };
   }
 
-  async changeUserRole(
-    targetId: string,
-    role: Role,
-    requesterId: string,
-  ) {
+  async changeUserRole(targetId: string, role: Role, requesterId: string) {
     if (targetId === requesterId) {
       throw new BadRequestException(
         'Admins cannot change their own role via this endpoint',
@@ -136,12 +133,48 @@ export class UsersService {
     const target = await this.prisma.user.findUnique({
       where: { id: targetId },
     });
-    if (!target) throw new NotFoundException('User not found');
+    if (!target || target.deletedAt) throw new NotFoundException('User not found');
 
     const updated = await this.prisma.user.update({
       where: { id: targetId },
       data: { role: role as any },
     });
     return { id: updated.id, email: updated.email, role: (updated as any).role };
+  }
+
+  async updateUserById(targetId: string, dto: AdminUpdateUserDto) {
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+    });
+    if (!target || target.deletedAt) throw new NotFoundException('User not found');
+
+    if (dto.email) {
+      const existing = await this.prisma.user.findFirst({
+        where: { email: dto.email, id: { not: targetId } },
+      });
+      if (existing) throw new BadRequestException('Email already in use');
+    }
+
+    if (dto.username) {
+      const existing = await this.prisma.user.findFirst({
+        where: { username: dto.username, id: { not: targetId } },
+      });
+      if (existing) throw new BadRequestException('Username already taken');
+    }
+
+    const data: any = {};
+    if (dto.email) { data.email = dto.email; data.emailVerified = false; }
+    if (dto.username) data.username = dto.username;
+
+    const updated = await this.prisma.user.update({
+      where: { id: targetId },
+      data,
+    });
+    return {
+      id: updated.id,
+      email: updated.email,
+      username: updated.username,
+      role: (updated as any).role,
+    };
   }
 }
