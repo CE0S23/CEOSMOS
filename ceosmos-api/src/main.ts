@@ -11,8 +11,22 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookieParser());
 
+  console.log('FRONTEND_ORIGIN:', process.env.FRONTEND_ORIGIN);
+
   app.enableCors({
-    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:4200',
+    origin: (origin, callback) => {
+      const allowed = [
+        process.env.FRONTEND_ORIGIN,
+        'http://localhost:4200',
+        'https://ceosmos-t8ee.vercel.app',
+      ].filter(Boolean);
+
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
