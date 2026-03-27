@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
+
   private readonly transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -14,6 +15,7 @@ export class MailService {
       refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
   });
+
   private readonly from = `CEOSMOS <${process.env.GMAIL_USER}>`;
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
