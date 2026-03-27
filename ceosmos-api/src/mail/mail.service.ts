@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly resend = new Resend(process.env.RESEND_API_KEY);
-  private readonly from = 'CEOSMOS <onboarding@resend.dev>';
+  private readonly from = 'CEOSMOS <ras3ec@gmail.com>';
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     const html = `
