@@ -6,12 +6,15 @@ export const authGuard: CanActivateFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // If already marked as authenticated, pass
   if (authService.isAuthenticated()) {
     return true;
   }
 
-  // Otherwise, try to fetch me to see if cookie is valid
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return router.parseUrl('/login');
+  }
+
   try {
     await authService.getMe();
     return true;
@@ -26,6 +29,11 @@ export const guestGuard: CanActivateFn = async () => {
 
   if (authService.isAuthenticated()) {
     return router.parseUrl('/');
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return true;
   }
 
   try {
