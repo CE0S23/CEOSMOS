@@ -1,11 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private readonly resend = new Resend(process.env.RESEND_API_KEY);
-  private readonly from = 'CEOSMOS <ras3ec@gmail.com>';
+  private readonly transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    auth: {
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_SMTP_PASSWORD,
+    },
+  });
+  private readonly from = `CEOSMOS <${process.env.BREVO_USER}>`;
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     const html = `
@@ -20,7 +27,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Verifica tu cuenta CEOSMOS',
@@ -52,7 +59,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Restablece tu contraseña CEOSMOS',
@@ -84,7 +91,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Confirma tu cambio de contraseña',
