@@ -31,15 +31,16 @@ export class MailService {
     `;
 
     try {
-      await this.transporter.sendMail({
+      const result = await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Verifica tu cuenta CEOSMOS',
         html,
       });
-      this.logger.log(`Verification email sent to ${email}`);
+      this.logger.log(`Verification email sent to ${email}: ${JSON.stringify(result)}`);
     } catch (error) {
-      this.logger.error('Failed to send verification email', error);
+      this.logger.error(`Mail error: ${error.message}`);
+      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
@@ -63,15 +64,16 @@ export class MailService {
     `;
 
     try {
-      await this.transporter.sendMail({
+      const result = await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Restablece tu contraseña CEOSMOS',
         html,
       });
-      this.logger.log(`Password reset email sent to ${email}`);
+      this.logger.log(`Password reset email sent to ${email}: ${JSON.stringify(result)}`);
     } catch (error) {
-      this.logger.error('Failed to send password reset email', error);
+      this.logger.error(`Mail error: ${error.message}`);
+      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
@@ -95,15 +97,16 @@ export class MailService {
     `;
 
     try {
-      await this.transporter.sendMail({
+      const result = await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Confirma tu cambio de contraseña',
         html,
       });
-      this.logger.log(`Password change confirmation email sent to ${email}`);
+      this.logger.log(`Password change confirmation email sent to ${email}: ${JSON.stringify(result)}`);
     } catch (error) {
-      this.logger.error('Failed to send password change confirmation email', error);
+      this.logger.error(`Mail error: ${error.message}`);
+      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
