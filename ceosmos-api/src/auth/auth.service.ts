@@ -47,6 +47,11 @@ export class AuthService {
       where: { OR: [{ email: dto.email }, { username: dto.username }] },
     });
     if (existing) {
+      // Unverified account with same email: resend code instead of rejecting
+      if (existing.email === dto.email && !existing.emailVerified) {
+        await this.resendVerification(dto.email);
+        return { message: 'Verification email resent. Check your inbox.' };
+      }
       console.error(`[AuthService] Registration failed: Email or username already in use (${dto.email}, ${dto.username})`);
       throw new BadRequestException('Email or username already in use');
     }

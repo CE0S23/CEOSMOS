@@ -27,10 +27,9 @@ export class MailService {
         html,
       });
       this.logger.log(`Verification email sent to ${email}`);
-    } catch (e) {
-      if (e instanceof Error) {
-        this.logger.error(`Error sending verification email: ${e.message}`, e.stack);
-      }
+    } catch (error) {
+      this.logger.error('Failed to send verification email', error);
+      throw error;
     }
   }
 
@@ -60,10 +59,9 @@ export class MailService {
         html,
       });
       this.logger.log(`Password reset email sent to ${email}`);
-    } catch (e) {
-      if (e instanceof Error) {
-        this.logger.error(`Error sending password reset email: ${e.message}`, e.stack);
-      }
+    } catch (error) {
+      this.logger.error('Failed to send password reset email', error);
+      throw error;
     }
   }
 
@@ -93,10 +91,9 @@ export class MailService {
         html,
       });
       this.logger.log(`Password change confirmation email sent to ${email}`);
-    } catch (e) {
-      if (e instanceof Error) {
-        this.logger.error(`Error sending password change confirmation: ${e.message}`, e.stack);
-      }
+    } catch (error) {
+      this.logger.error('Failed to send password change confirmation email', error);
+      throw error;
     }
   }
 }
