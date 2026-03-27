@@ -62,6 +62,7 @@ export class RegisterComponent {
       localStorage.setItem('verify_email', this.registerForm.value.email);
       this.router.navigate(['/verify-email']);
     } catch (err: any) {
+      console.log('[register error]', err.error);
       this.errorMessage.set(err.error?.message || 'Error al registrar la cuenta');
     } finally {
       this.isLoading.set(false);
