@@ -85,7 +85,11 @@ export class AuthService {
       },
     });
 
-    await this.mailService.sendVerificationEmail(user.email, rawCode);
+    try {
+      await this.mailService.sendVerificationEmail(user.email, rawCode);
+    } catch (mailError) {
+      console.error('[AuthService] Mail failed during register, continuing', mailError);
+    }
 
     console.log(`[AuthService] User registered successfully: ${user.email}`);
 
@@ -196,7 +200,11 @@ export class AuthService {
       },
     });
 
-    await this.mailService.sendVerificationEmail(user.email, rawCode);
+    try {
+      await this.mailService.sendVerificationEmail(user.email, rawCode);
+    } catch (mailError) {
+      console.error('[AuthService] Mail failed during resendVerification, continuing', mailError);
+    }
 
     return { message: 'Verification code resent successfully' };
   }
