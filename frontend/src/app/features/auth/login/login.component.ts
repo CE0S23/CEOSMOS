@@ -101,6 +101,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.router.navigate(['/feed']);
     } catch (err: any) {
       if (err.status === 401 && err.error?.message === 'Email not verified') {
+        localStorage.setItem('verify_email', this.loginForm.value.email);
         this.router.navigate(['/verify-email']);
       } else {
         this.errorMessage.set('Credenciales inválidas o cuenta no verificada.');

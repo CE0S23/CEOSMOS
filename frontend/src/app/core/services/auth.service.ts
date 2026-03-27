@@ -43,6 +43,7 @@ export class AuthService {
     try {
       await firstValueFrom(this.http.post(`${this.apiUrl}/auth/logout`, {}));
     } finally {
+      localStorage.removeItem('token');
       this.setUser(null);
     }
   }
@@ -68,7 +69,10 @@ export class AuthService {
   }
 
   async login(data: any): Promise<any> {
-    const response = await firstValueFrom(this.http.post(`${this.apiUrl}/auth/login`, data));
+    const response: any = await firstValueFrom(this.http.post(`${this.apiUrl}/auth/login`, data));
+    if (response && response.token) {
+      localStorage.setItem('token', response.token);
+    }
     // Following successful login, get the user profile to populate state
     await this.getMe();
     return response;
@@ -87,7 +91,10 @@ export class AuthService {
   }
 
   async webAuthnLoginVerify(data: any): Promise<any> {
-    const response = await firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/login/verify`, data));
+    const response: any = await firstValueFrom(this.http.post(`${this.apiUrl}/auth/webauthn/login/verify`, data));
+    if (response && response.token) {
+      localStorage.setItem('token', response.token);
+    }
     await this.getMe();
     return response;
   }

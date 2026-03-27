@@ -34,7 +34,7 @@ export class VerifyEmailComponent implements OnInit {
   private interval: any;
 
   verifyForm: FormGroup = this.fb.group({
-    code: ['', [Validators.required, Validators.length === 6]]
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
   });
 
   ngOnInit() {

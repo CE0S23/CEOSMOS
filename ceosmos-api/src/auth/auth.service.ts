@@ -42,10 +42,12 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto): Promise<{ message: string }> {
+    console.log(`[AuthService] Registering user with email: ${dto.email}`);
     const existing = await this.prisma.user.findFirst({
       where: { OR: [{ email: dto.email }, { username: dto.username }] },
     });
     if (existing) {
+      console.error(`[AuthService] Registration failed: Email or username already in use (${dto.email}, ${dto.username})`);
       throw new BadRequestException('Email or username already in use');
     }
 
@@ -80,6 +82,8 @@ export class AuthService {
 
     await this.mailService.sendVerificationEmail(user.email, rawCode);
 
+    console.log(`[AuthService] User registered successfully: ${user.email}`);
+
     return { message: 'User created. Check your email for the verification code.' };
   }
 
@@ -87,23 +91,28 @@ export class AuthService {
     dto: LoginDto,
     req: Request,
   ): Promise<{ accessToken: string }> {
+    console.log(`[AuthService] Login attempt for email: ${dto.email}`);
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
 
     if (!user || !user.passwordHash) {
+      console.error(`[AuthService] Login failed: Invalid credentials for ${dto.email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.emailVerified) {
+      console.error(`[AuthService] Login failed: Email not verified for ${dto.email}`);
       throw new UnauthorizedException('Email not verified');
     }
 
     const isValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isValid) {
+      console.error(`[AuthService] Login failed: Password mismatch for ${dto.email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    console.log(`[AuthService] User logged in successfully: ${dto.email}`);
     return this.buildJwtSession(user.id, req);
   }
 

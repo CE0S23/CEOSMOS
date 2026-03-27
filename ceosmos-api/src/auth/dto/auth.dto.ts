@@ -68,8 +68,8 @@ export class VerifyEmailDto {
   email: string;
 
   @IsString()
-  @MinLength(64)
-  @MaxLength(64)
+  @MinLength(6)
+  @MaxLength(6)
   code: string;
 }
 
@@ -85,8 +85,7 @@ export class ForgotPasswordDto {
 
 export class ResetPasswordDto {
   @IsString()
-  @MinLength(64)
-  @MaxLength(64)
+  @MinLength(1)
   token: string;
 
   @IsString()
