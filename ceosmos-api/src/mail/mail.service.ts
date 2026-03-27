@@ -1,15 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-
-  constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
-  ) {}
+  private readonly resend = new Resend(process.env.RESEND_API_KEY);
+  private readonly from = 'CEOSMOS <onboarding@resend.dev>';
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     const html = `
@@ -24,7 +20,8 @@ export class MailService {
     `;
 
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.from,
         to: email,
         subject: 'Verifica tu cuenta CEOSMOS',
         html,
@@ -38,10 +35,9 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
-    const origin = this.configService.get<string>('FRONTEND_ORIGIN') ?? 'http://localhost:4200';
-    const escapedToken = encodeURIComponent(token);
-    const resetLink = `${origin}/reset-password?token=${escapedToken}`;
-    
+    const origin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:4200';
+    const resetLink = `${origin}/reset-password?token=${encodeURIComponent(token)}`;
+
     const html = `
       <div style="background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; padding: 40px; text-align: center;">
         <h1 style="color: #58a6ff;">Restablece tu contraseña CEOSMOS</h1>
@@ -57,7 +53,8 @@ export class MailService {
     `;
 
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.from,
         to: email,
         subject: 'Restablece tu contraseña CEOSMOS',
         html,
@@ -69,27 +66,28 @@ export class MailService {
       }
     }
   }
+
   async sendPasswordChangeConfirmEmail(email: string, token: string): Promise<void> {
-    const origin = this.configService.get<string>('FRONTEND_ORIGIN') ?? 'http://localhost:4200';
-    const escapedToken = encodeURIComponent(token);
-    const resetLink = `${origin}/confirm-password-change?token=${escapedToken}`;
-    
+    const origin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:4200';
+    const confirmLink = `${origin}/confirm-password-change?token=${encodeURIComponent(token)}`;
+
     const html = `
       <div style="background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; padding: 40px; text-align: center;">
         <h1 style="color: #58a6ff;">Confirma tu cambio de contraseña</h1>
         <p style="font-size: 16px;">Se ha solicitado un cambio de contraseña desde tu perfil. Haz clic en el enlace para confirmar:</p>
         <div style="margin: 30px auto;">
-          <a href="${resetLink}" style="background-color: #238636; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">
+          <a href="${confirmLink}" style="background-color: #238636; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">
             Confirmar Cambio de Contraseña
           </a>
         </div>
         <p style="font-size: 14px; color: #8b949e;">Este enlace expira en 1 hora.</p>
-        <p style="font-size: 12px; color: #8b949e;">Si el botón no funciona, copia y pega este enlace en tu navegador:<br><br>${resetLink}</p>
+        <p style="font-size: 12px; color: #8b949e;">Si el botón no funciona, copia y pega este enlace en tu navegador:<br><br>${confirmLink}</p>
       </div>
     `;
 
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.from,
         to: email,
         subject: 'Confirma tu cambio de contraseña',
         html,
