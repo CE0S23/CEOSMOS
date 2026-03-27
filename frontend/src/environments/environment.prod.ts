@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://ceosmos-api.onrender.com/api'
+  apiUrl: 'https://ceosmos-production.up.railway.app/api'
 };

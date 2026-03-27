@@ -1,22 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-
-  private readonly transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.GMAIL_USER,
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-    },
-  });
-
-  private readonly from = `CEOSMOS <${process.env.GMAIL_USER}>`;
+  private readonly resend = new Resend(process.env.RESEND_API_KEY);
+  private readonly from = process.env.RESEND_FROM_EMAIL ?? 'CEOSMOS <onboarding@resend.dev>';
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     const html = `
@@ -31,16 +20,16 @@ export class MailService {
     `;
 
     try {
-      const result = await this.transporter.sendMail({
+      const { data, error } = await this.resend.emails.send({
         from: this.from,
         to: email,
         subject: 'Verifica tu cuenta CEOSMOS',
         html,
       });
-      this.logger.log(`Verification email sent to ${email}: ${JSON.stringify(result)}`);
+      if (error) throw new Error(error.message);
+      this.logger.log(`Verification email sent to ${email}: ${data?.id}`);
     } catch (error) {
       this.logger.error(`Mail error: ${error.message}`);
-      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
@@ -64,16 +53,16 @@ export class MailService {
     `;
 
     try {
-      const result = await this.transporter.sendMail({
+      const { data, error } = await this.resend.emails.send({
         from: this.from,
         to: email,
         subject: 'Restablece tu contraseña CEOSMOS',
         html,
       });
-      this.logger.log(`Password reset email sent to ${email}: ${JSON.stringify(result)}`);
+      if (error) throw new Error(error.message);
+      this.logger.log(`Password reset email sent to ${email}: ${data?.id}`);
     } catch (error) {
       this.logger.error(`Mail error: ${error.message}`);
-      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
@@ -97,16 +86,16 @@ export class MailService {
     `;
 
     try {
-      const result = await this.transporter.sendMail({
+      const { data, error } = await this.resend.emails.send({
         from: this.from,
         to: email,
         subject: 'Confirma tu cambio de contraseña',
         html,
       });
-      this.logger.log(`Password change confirmation email sent to ${email}: ${JSON.stringify(result)}`);
+      if (error) throw new Error(error.message);
+      this.logger.log(`Password change confirmation email sent to ${email}: ${data?.id}`);
     } catch (error) {
       this.logger.error(`Mail error: ${error.message}`);
-      this.logger.error(`Mail error code: ${error.code}`);
       throw error;
     }
   }
