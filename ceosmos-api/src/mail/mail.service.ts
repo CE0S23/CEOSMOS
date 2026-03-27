@@ -1,11 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private readonly resend = new Resend(process.env.RESEND_API_KEY);
-  private readonly from = 'CEOSMOS <onboarding@resend.dev>';
+  private readonly transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.GMAIL_USER,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+    },
+  });
+  private readonly from = `CEOSMOS <${process.env.GMAIL_USER}>`;
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
     const html = `
@@ -20,7 +29,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Verifica tu cuenta CEOSMOS',
@@ -52,7 +61,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Restablece tu contraseña CEOSMOS',
@@ -84,7 +93,7 @@ export class MailService {
     `;
 
     try {
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.from,
         to: email,
         subject: 'Confirma tu cambio de contraseña',
