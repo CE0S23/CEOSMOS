@@ -53,6 +53,10 @@
         >{{ link.label }}</a>
       }
       
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/profile" routerLinkActive="active" class="nav-link" aria-label="Mi perfil">Mi perfil</a>
+      }
+
       @if (auth.user()?.role === 'ADMIN') {
         <a routerLink="/admin" routerLinkActive="active" class="nav-link nav-link-admin" aria-label="Admin">⚙ Admin</a>
       }
@@ -123,6 +127,18 @@
       }
     </ul>
     
+    @if (auth.isAuthenticated()) {
+      <div class="sidebar-divider"></div>
+      <ul>
+        <li>
+          <a routerLink="/profile" class="sidebar-link" (click)="sidebarOpen.set(false)">
+            <span class="sidebar-icon">👤</span>
+            Mi perfil
+          </a>
+        </li>
+      </ul>
+    }
+
     @if (auth.user()?.role === 'ADMIN') {
       <div class="sidebar-divider"></div>
       <ul>

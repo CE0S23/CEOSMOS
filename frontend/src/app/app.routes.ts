@@ -34,6 +34,13 @@ export const APP_ROUTES: Routes = [
     title: 'CEOSmos - Politica de Privacidad',
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(m => m.ProfileComponent),
+    title: 'CEOSmos - Mi Perfil',
+    canActivate: [authGuard],
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/admin.component').then(m => m.AdminComponent),

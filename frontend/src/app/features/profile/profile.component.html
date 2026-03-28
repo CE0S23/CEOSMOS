@@ -1,0 +1,86 @@
+<div class="profile-page">
+  <div class="profile-container">
+
+    <!-- Header with avatar -->
+    <div class="profile-hero glassmorphism">
+      <div class="avatar-circle">{{ initials }}</div>
+      <div class="hero-info">
+        <h1 class="hero-name">{{ auth.user()?.username ?? auth.user()?.name }}</h1>
+        <span class="role-badge" [class.admin]="auth.user()?.role === 'ADMIN'">
+          {{ auth.user()?.role ?? 'USER' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Personal data -->
+      <section class="profile-card glassmorphism">
+        <h2 class="section-title">Datos Personales</h2>
+        <dl class="info-list">
+          <div class="info-row">
+            <dt>Usuario</dt>
+            <dd>{{ auth.user()?.username ?? '—' }}</dd>
+          </div>
+          <div class="info-row">
+            <dt>Email</dt>
+            <dd>{{ auth.user()?.email }}</dd>
+          </div>
+          <div class="info-row">
+            <dt>Email verificado</dt>
+            <dd>
+              <span class="badge" [class.badge-ok]="auth.user()?.emailVerified" [class.badge-no]="!auth.user()?.emailVerified">
+                {{ auth.user()?.emailVerified ? 'Sí' : 'No' }}
+              </span>
+            </dd>
+          </div>
+          <div class="info-row">
+            <dt>Rol</dt>
+            <dd>{{ auth.user()?.role ?? 'USER' }}</dd>
+          </div>
+          @if (auth.user()?.createdAt) {
+            <div class="info-row">
+              <dt>Miembro desde</dt>
+              <dd>{{ auth.user()?.createdAt | date:'dd/MM/yyyy' }}</dd>
+            </div>
+          }
+        </dl>
+        <div class="card-actions">
+          <a routerLink="/reset-password" class="btn-action">Cambiar contraseña</a>
+        </div>
+      </section>
+
+      <!-- Sessions -->
+      <section class="profile-card glassmorphism">
+        <h2 class="section-title">Últimas Sesiones</h2>
+        @if (loadingSessions()) {
+          <p class="state-msg">Cargando sesiones...</p>
+        } @else if (sessionsError()) {
+          <p class="state-msg state-error">{{ sessionsError() }}</p>
+        } @else if (sessions().length === 0) {
+          <p class="state-msg">No hay sesiones registradas.</p>
+        } @else {
+          <div class="table-wrapper">
+            <table class="sessions-table">
+              <thead>
+                <tr>
+                  <th>Fecha de inicio</th>
+                  <th>IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (session of sessions(); track session.id) {
+                  <tr>
+                    <td>{{ session.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ session.ipAddress ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+    </div>
+  </div>
+</div>

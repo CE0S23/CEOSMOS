@@ -33,6 +33,7 @@ export class UsersService {
       username: user.username,
       emailVerified: user.emailVerified,
       role: (user as any).role,
+      createdAt: user.createdAt,
       preferences: user.preferences,
       mediaItemsCount: user._count.mediaItems,
     };
@@ -74,6 +75,19 @@ export class UsersService {
     }
 
     return this.getProfile(userId);
+  }
+
+  async getSessions(userId: string) {
+    return this.prisma.session.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        createdAt: true,
+        ipAddress: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
   }
 
   async deleteAccount(userId: string) {

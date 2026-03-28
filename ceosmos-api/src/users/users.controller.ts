@@ -38,6 +38,11 @@ export class UsersController {
     return this.usersService.getProfile(req.user.id);
   }
 
+  @Get('me/sessions')
+  async getMySessions(@Req() req: RequestWithUser) {
+    return this.usersService.getSessions(req.user.id);
+  }
+
   @Patch('preferences')
   async updatePreferences(
     @Req() req: RequestWithUser,

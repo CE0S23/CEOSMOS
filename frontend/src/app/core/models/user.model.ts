@@ -8,6 +8,14 @@ export interface UserProfile {
   picture?: string;
   provider: AuthProvider;
   role?: 'USER' | 'ADMIN';
+  emailVerified?: boolean;
+  createdAt?: string;
+}
+
+export interface Session {
+  id: string;
+  createdAt: string;
+  ipAddress: string | null;
 }
 
 export interface AdminUser {
