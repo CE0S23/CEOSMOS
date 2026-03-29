@@ -18,7 +18,7 @@ export class UsersService {
       include: {
         preferences: true,
         _count: {
-          select: { mediaItems: true },
+          select: { mediaItems: true, passkeys: true },
         },
       },
     });
@@ -36,6 +36,7 @@ export class UsersService {
       createdAt: user.createdAt,
       preferences: user.preferences,
       mediaItemsCount: user._count.mediaItems,
+      hasPasskey: user._count.passkeys > 0,
     };
   }
 

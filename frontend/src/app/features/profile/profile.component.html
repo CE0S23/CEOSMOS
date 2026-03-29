@@ -82,5 +82,43 @@
       </section>
 
     </div>
+
+    <!-- Security — Passkey -->
+    <section class="profile-card glassmorphism passkey-section">
+      <h2 class="section-title">Seguridad — Huella Digital / Passkey</h2>
+
+      <div class="passkey-status">
+        @if (auth.user()?.hasPasskey) {
+          <span class="badge badge-ok">Huella registrada</span>
+          <p class="passkey-hint">Ya tienes una huella digital registrada. Puedes registrar otra en un dispositivo nuevo.</p>
+        } @else {
+          <span class="badge badge-no">Sin huella registrada</span>
+          <p class="passkey-hint">Registra tu huella digital o Face ID para iniciar sesión sin contraseña.</p>
+        }
+      </div>
+
+      @if (passkeySuccess()) {
+        <p class="passkey-msg passkey-msg-ok" role="status">{{ passkeySuccess() }}</p>
+      }
+      @if (passkeyError()) {
+        <p class="passkey-msg passkey-msg-err" role="alert">{{ passkeyError() }}</p>
+      }
+
+      <div class="card-actions">
+        <button
+          class="btn-action"
+          (click)="registerPasskey()"
+          [disabled]="passkeyLoading()"
+          aria-label="Registrar huella digital o passkey"
+        >
+          @if (passkeyLoading()) {
+            Registrando...
+          } @else {
+            Registrar huella digital
+          }
+        </button>
+      </div>
+    </section>
+
   </div>
 </div>

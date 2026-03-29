@@ -10,6 +10,7 @@ export interface UserProfile {
   role?: 'USER' | 'ADMIN';
   emailVerified?: boolean;
   createdAt?: string;
+  hasPasskey?: boolean;
 }
 
 export interface Session {

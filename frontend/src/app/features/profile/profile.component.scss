@@ -162,6 +162,44 @@
   }
 }
 
+// ── Passkey section ───────────────────────────────────────
+.passkey-section {
+  grid-column: 1 / -1;
+}
+
+.passkey-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.passkey-hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(240, 244, 248, 0.55);
+  width: 100%;
+}
+
+.passkey-msg {
+  margin: 0;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+
+  &.passkey-msg-ok {
+    background: rgba(35, 134, 54, 0.15);
+    color: #56d364;
+    border: 1px solid rgba(35, 134, 54, 0.4);
+  }
+
+  &.passkey-msg-err {
+    background: rgba(248, 81, 73, 0.1);
+    color: #f85149;
+    border: 1px solid rgba(248, 81, 73, 0.35);
+  }
+}
+
 // ── Sessions table ────────────────────────────────────────
 .state-msg {
   color: rgba(240, 244, 248, 0.45);
