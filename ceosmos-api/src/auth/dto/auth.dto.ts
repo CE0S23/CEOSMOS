@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsObject,
   IsString,
   MinLength,
   MaxLength,
@@ -45,6 +46,7 @@ export class WebAuthnRegisterVerifyDto {
   @IsString()
   challenge: string;
 
+  @IsObject()
   response: Record<string, unknown>;
 }
 
@@ -60,6 +62,7 @@ export class WebAuthnLoginVerifyDto {
   @IsString()
   challenge: string;
 
+  @IsObject()
   response: Record<string, unknown>;
 }
 
