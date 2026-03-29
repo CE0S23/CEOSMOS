@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,6 +26,7 @@ import type { Request } from 'express';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly rpID: string;
   private readonly rpName: string;
   private readonly expectedOrigin: string;
@@ -303,13 +305,25 @@ export class AuthService {
     });
     if (!user) throw new BadRequestException('User not found');
 
-    const verification = await verifyRegistrationResponse({
-      response: dto.response as any,
-      expectedChallenge: dto.challenge,
-      expectedOrigin: this.expectedOrigin,
-      expectedRPID: this.rpID,
-      requireUserVerification: false,
-    });
+    this.logger.log(`[WebAuthn Register] rpID: "${this.rpID}"`);
+    this.logger.log(`[WebAuthn Register] expectedOrigin: "${this.expectedOrigin}"`);
+    this.logger.log(`[WebAuthn Register] challenge: "${dto.challenge}"`);
+    this.logger.log(`[WebAuthn Register] response.id: "${(dto.response as any)?.id}"`);
+
+    let verification: any;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: dto.response as any,
+        expectedChallenge: dto.challenge,
+        expectedOrigin: this.expectedOrigin,
+        expectedRPID: this.rpID,
+        requireUserVerification: false,
+      });
+      this.logger.log(`[WebAuthn Register] verified: ${verification.verified}`);
+    } catch (error: any) {
+      this.logger.error(`[WebAuthn Register] verifyRegistrationResponse threw: ${error.message}`);
+      throw error;
+    }
 
     if (!verification.verified || !verification.registrationInfo) {
       throw new BadRequestException('WebAuthn registration verification failed');
