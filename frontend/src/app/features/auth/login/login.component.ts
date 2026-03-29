@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TabsModule } from 'primeng/tabs';
@@ -45,11 +45,14 @@ export class LoginComponent implements OnInit, OnDestroy {
   readonly isLoading = this.auth.isLoading;
   passkeyAvailable = signal(false);
   errorMessage = signal<string | null>(null);
+  passkeyEmailError = signal<string | null>(null);
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]]
   });
+
+  passkeyEmailControl = new FormControl('', [Validators.required, Validators.email]);
 
   private scriptEl: HTMLScriptElement | null = null;
 
@@ -112,29 +115,30 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   async signInWithPasskey(): Promise<void> {
+    this.passkeyEmailError.set(null);
     this.errorMessage.set(null);
+
+    const email = this.passkeyEmailControl.value?.trim();
+    if (!email || this.passkeyEmailControl.invalid) {
+      this.passkeyEmailError.set('Ingresa un correo electrónico válido.');
+      return;
+    }
+
     this.auth.setLoading(true);
-
     try {
-      const emailForm = this.loginForm.get('email')?.value;
-      if (!emailForm) {
-        throw new Error('Ingresa tu correo en el tab de contraseña antes de usar huella digital');
-      }
-
-      // 1. Get options from backend
-      const options = await this.auth.webAuthnLoginOptions(emailForm);
-
-      // 2. Start browser check
-      const authResp = await startAuthentication(options);
-
-      // 3. Verify in backend
-      await this.auth.webAuthnLoginVerify({ email: emailForm, challenge: options.challenge, response: authResp });
-      
+      const options = await this.auth.webAuthnLoginOptions(email);
+      const authResp = await startAuthentication({ optionsJSON: options });
+      await this.auth.webAuthnLoginVerify({ email, challenge: options.challenge, response: authResp });
       this.router.navigate(['/feed']);
     } catch (err: any) {
-      const message = err?.response?.data?.message || err.message || 'Error de autenticación';
-      this.errorMessage.set(message);
-      console.error('Passkey error:', message);
+      if (err?.name === 'NotAllowedError') {
+        this.errorMessage.set('Autenticación cancelada.');
+      } else if (err?.name === 'NotSupportedError') {
+        this.errorMessage.set('Tu dispositivo no soporta huella digital.');
+      } else {
+        const msg = err?.error?.message ?? err?.message ?? 'Error de autenticación.';
+        this.errorMessage.set(msg);
+      }
     } finally {
       this.auth.setLoading(false);
     }

@@ -19,6 +19,7 @@ export const authGuard: CanActivateFn = async () => {
     await authService.getMe();
     return true;
   } catch {
+    localStorage.clear();
     return router.parseUrl('/login');
   }
 };

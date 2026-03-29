@@ -57,7 +57,17 @@
 
               @if (passkeyAvailable()) {
                 <div class="field">
-                  <p class="privacy-note">Asegúrate de haber ingresado tu correo en la otra pestaña antes de usar huella digital.</p>
+                  <input
+                    pInputText
+                    type="email"
+                    placeholder="Correo electrónico"
+                    [formControl]="passkeyEmailControl"
+                    style="width: 100%"
+                    aria-label="Correo para huella digital"
+                  />
+                  @if (passkeyEmailError()) {
+                    <p class="field-error" role="alert">{{ passkeyEmailError() }}</p>
+                  }
                 </div>
                 <button
                   id="passkey-btn"
@@ -74,7 +84,7 @@
                 </button>
               } @else {
                 <p class="passkey-unavailable">
-                  La autenticacion biometrica no esta disponible en este dispositivo.
+                  Tu dispositivo no soporta huella digital.
                 </p>
               }
             </p-tabpanel>

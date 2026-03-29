@@ -28,6 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !req.url.includes('/auth/login')) {
+        localStorage.clear();
         authService.setAuthenticated(false);
         router.navigate(['/login']);
       }

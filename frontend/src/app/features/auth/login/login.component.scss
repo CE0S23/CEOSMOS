@@ -161,6 +161,12 @@
   margin: 0;
 }
 
+.field-error {
+  color: #f48fb1;
+  font-size: 0.78rem;
+  margin: 4px 0 0;
+}
+
 .error-msg {
   background: rgba(233, 30, 99, 0.12);
   border: 1px solid rgba(233, 30, 99, 0.3);
