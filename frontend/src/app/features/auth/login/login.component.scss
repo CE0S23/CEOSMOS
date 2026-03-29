@@ -1,3 +1,4 @@
+// ── Layout ────────────────────────────────────────────────
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -8,6 +9,7 @@
   overflow: hidden;
 }
 
+// ── Animated background ───────────────────────────────────
 .cosmos-bg {
   position: fixed;
   inset: 0;
@@ -19,16 +21,14 @@
     background: radial-gradient(circle, rgba(123, 104, 238, 0.6), transparent);
     animation: floatStar 8s ease-in-out infinite;
   }
-  .star-1 { width: 300px; height: 300px; top: 10%; left: 5%; animation-delay: 0s; }
-  .star-2 { width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: 3s; }
-  .star-3 { width: 150px; height: 150px; bottom: 15%; left: 40%; animation-delay: 6s; }
+  .star-1 { width: 300px; height: 300px; top: 10%;    left: 5%;   animation-delay: 0s; }
+  .star-2 { width: 200px; height: 200px; top: 60%;    right: 10%; animation-delay: 3s; }
+  .star-3 { width: 150px; height: 150px; bottom: 15%; left: 40%;  animation-delay: 6s; }
 
   .nebula {
     position: absolute;
-    width: 600px;
-    height: 600px;
-    top: 50%;
-    left: 50%;
+    width: 600px; height: 600px;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle, rgba(102, 126, 234, 0.08), transparent 70%);
     border-radius: 50%;
@@ -37,13 +37,14 @@
 
 @keyframes floatStar {
   0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
+  50%       { transform: translateY(-20px) scale(1.05); }
 }
 
+// ── Card ──────────────────────────────────────────────────
 .login-card {
   width: 100%;
   max-width: 400px;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   padding: 48px 40px;
   position: relative;
   z-index: 1;
@@ -52,16 +53,17 @@
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+// ── Brand ─────────────────────────────────────────────────
 .brand-section {
   text-align: center;
   margin-bottom: 36px;
 
   .brand-mark {
     font-size: 2.5rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--gradient-cosmos);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -70,10 +72,10 @@
   }
 
   .brand-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-display);
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--gradient-cosmos);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -87,6 +89,7 @@
   }
 }
 
+// ── Loading ───────────────────────────────────────────────
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -101,18 +104,169 @@
   }
 }
 
+// ── Auth options wrapper ───────────────────────────────────
 .auth-options {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+// ── PrimeNG Tabs override ─────────────────────────────────
+::ng-deep {
+  // Tab container
+  .p-tabs {
+    background: transparent !important;
+  }
+
+  // Tab bar
+  .p-tablist {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 20px;
+  }
+
+  // Individual tab
+  .p-tab {
+    background: transparent !important;
+    color: rgba(240, 244, 248, 0.5) !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 8px 16px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    transition: color 0.2s, border-color 0.2s !important;
+
+    &:hover {
+      color: rgba(240, 244, 248, 0.85) !important;
+      background: transparent !important;
+    }
+
+    // Active tab
+    &[data-p-active="true"],
+    &.p-tab-active {
+      color: #a78bfa !important;
+      border-bottom-color: #7b68ee !important;
+      background: transparent !important;
+    }
+  }
+
+  // Tab panels
+  .p-tabpanels {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .p-tabpanel {
+    background: transparent !important;
+    padding: 0 !important;
+    color: var(--cosmos-stardust) !important;
+  }
+
+  // Ink bar / active indicator
+  .p-tablist-active-bar {
+    background: #7b68ee !important;
+    height: 2px !important;
+  }
+
+  // Input text
+  .p-inputtext {
+    background: rgba(10, 14, 39, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--cosmos-stardust) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 14px !important;
+    font-size: 0.9rem !important;
+    transition: border-color 0.2s !important;
+    width: 100% !important;
+
+    &::placeholder { color: rgba(240, 244, 248, 0.3) !important; }
+
+    &:focus {
+      border-color: rgba(123, 104, 238, 0.6) !important;
+      box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.12) !important;
+      outline: none !important;
+    }
+  }
+
+  // Password component wrapper
+  .p-password {
+    width: 100% !important;
+    display: block !important;
+
+    input.p-inputtext {
+      width: 100% !important;
+    }
+
+    .p-password-toggle-mask-icon {
+      color: rgba(240, 244, 248, 0.4) !important;
+      &:hover { color: rgba(240, 244, 248, 0.8) !important; }
+    }
+  }
+
+  // Submit button
+  .login-submit-btn.p-button,
+  button.login-submit-btn {
+    width: 100% !important;
+    background: var(--gradient-cosmos) !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 13px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+    letter-spacing: 0.02em !important;
+    transition: opacity 0.2s, transform 0.15s !important;
+    cursor: pointer !important;
+
+    &:hover:not(:disabled) {
+      opacity: 0.88 !important;
+      transform: translateY(-1px) !important;
+    }
+
+    &:active:not(:disabled) { transform: translateY(0) !important; }
+
+    &:disabled {
+      opacity: 0.35 !important;
+      cursor: not-allowed !important;
+    }
+  }
+}
+
+// ── Form layout ───────────────────────────────────────────
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// ── Auth links ────────────────────────────────────────────
+.auth-links {
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.8;
+
+  .auth-link {
+    color: #7b68ee;
+    text-decoration: none;
+    transition: color 0.2s;
+    &:hover { color: #a78bfa; text-decoration: underline; }
+  }
+}
+
+// ── Google button wrapper ─────────────────────────────────
 .google-btn-wrapper {
   display: flex;
   justify-content: center;
   min-height: 44px;
 }
 
+// ── Divider ───────────────────────────────────────────────
 .divider {
   display: flex;
   align-items: center;
@@ -128,6 +282,7 @@
   }
 }
 
+// ── Passkey button ────────────────────────────────────────
 .passkey-btn {
   display: flex;
   align-items: center;
@@ -135,22 +290,18 @@
   gap: 10px;
   width: 100%;
   padding: 13px 20px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
-  border: 1px solid rgba(123, 104, 238, 0.35);
-  border-radius: 12px;
-  color: rgba(240, 244, 248, 0.9);
+  background: var(--gradient-cosmos);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s, transform 0.15s;
 
-  &:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
-    border-color: rgba(123, 104, 238, 0.6);
-    transform: translateY(-1px);
-  }
-
+  &:hover { opacity: 0.88; transform: translateY(-1px); }
   &:active { transform: translateY(0); }
 }
 
@@ -161,23 +312,26 @@
   margin: 0;
 }
 
+// ── Inline field error ────────────────────────────────────
 .field-error {
-  color: #f48fb1;
+  color: #f85149;
   font-size: 0.78rem;
   margin: 4px 0 0;
 }
 
+// ── Global error banner ───────────────────────────────────
 .error-msg {
-  background: rgba(233, 30, 99, 0.12);
-  border: 1px solid rgba(233, 30, 99, 0.3);
-  color: #f48fb1;
-  border-radius: 10px;
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.35);
+  color: #f85149;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   font-size: 0.82rem;
   text-align: center;
   margin: 0;
 }
 
+// ── Privacy note ──────────────────────────────────────────
 .privacy-note {
   text-align: center;
   font-size: 0.75rem;
@@ -185,7 +339,7 @@
   margin: 0;
 
   .privacy-link {
-    color: #7b68ee;
+    color: var(--cosmos-aurora);
     text-decoration: none;
     &:hover { text-decoration: underline; }
   }
