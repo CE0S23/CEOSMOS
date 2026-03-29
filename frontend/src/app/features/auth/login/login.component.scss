@@ -120,10 +120,13 @@
 
   // Tab bar
   .p-tablist {
-    background: transparent !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    margin-bottom: 20px;
+    background: rgba(10, 14, 39, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-md) !important;
+    margin-bottom: 20px !important;
     display: flex !important;
+    padding: 4px !important;
+    gap: 4px !important;
   }
 
   // Individual tab — full width split
@@ -131,25 +134,25 @@
     flex: 1 !important;
     text-align: center !important;
     background: transparent !important;
-    color: rgba(240, 244, 248, 0.9) !important;
+    color: rgba(240, 244, 248, 0.55) !important;
     border: none !important;
-    border-bottom: 2px solid transparent !important;
-    padding: 10px 8px !important;
+    border-radius: 8px !important;
+    padding: 9px 8px !important;
     font-size: 0.875rem !important;
     font-weight: 500 !important;
-    transition: color 0.2s, border-color 0.2s !important;
+    transition: color 0.2s, background 0.2s !important;
 
     &:hover {
-      color: rgba(240, 244, 248, 0.9) !important;
-      background: transparent !important;
+      color: rgba(240, 244, 248, 0.85) !important;
+      background: rgba(255, 255, 255, 0.05) !important;
     }
 
     // Active tab
     &[data-p-active="true"],
     &.p-tab-active {
+      background: rgba(123, 104, 238, 0.2) !important;
       color: #a78bfa !important;
-      border-bottom-color: #7b68ee !important;
-      background: transparent !important;
+      border: none !important;
     }
   }
 
@@ -165,10 +168,9 @@
     color: var(--cosmos-stardust) !important;
   }
 
-  // Ink bar / active indicator
+  // Hide the sliding ink bar (replaced by bg on active tab)
   .p-tablist-active-bar {
-    background: #7b68ee !important;
-    height: 2px !important;
+    display: none !important;
   }
 
   // Input text
