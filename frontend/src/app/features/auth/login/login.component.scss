@@ -123,21 +123,24 @@
     background: transparent !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     margin-bottom: 20px;
+    display: flex !important;
   }
 
-  // Individual tab
+  // Individual tab — full width split
   .p-tab {
+    flex: 1 !important;
+    text-align: center !important;
     background: transparent !important;
-    color: rgba(240, 244, 248, 0.5) !important;
+    color: rgba(240, 244, 248, 0.65) !important;
     border: none !important;
     border-bottom: 2px solid transparent !important;
-    padding: 8px 16px !important;
+    padding: 10px 8px !important;
     font-size: 0.875rem !important;
     font-weight: 500 !important;
     transition: color 0.2s, border-color 0.2s !important;
 
     &:hover {
-      color: rgba(240, 244, 248, 0.85) !important;
+      color: rgba(240, 244, 248, 0.9) !important;
       background: transparent !important;
     }
 
